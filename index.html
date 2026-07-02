@@ -1313,7 +1313,9 @@ footer{background:#1a1530;color:#e3def5;padding:56px 5% 28px;}
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-const BACKEND_URL = 'http://172.27.234.109:5000';
+const BACKEND_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (window.location.port === '5000' || window.location.port === '5501')
+  ? 'http://localhost:5000'
+  : 'https://mpulse-digi-ai.onrender.com';
 
 // ── Course detail data ──────────────────────────────────────────
 const courseDetails = {
