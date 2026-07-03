@@ -406,6 +406,7 @@
       align-items: center;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
       z-index: 100;
+      transition: all 0.3s ease;
     }
 
     .control-btn {
@@ -468,7 +469,7 @@
       gap: 4px;
       box-shadow: var(--shadow);
       z-index: 200;
-      width: 200px;
+      width: 210px;
     }
 
     .more-menu button {
@@ -489,6 +490,39 @@
 
     .more-menu button:hover {
       background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* MOBILE / PORTRAIT ADAPTATIONS */
+    @media (max-width: 600px) {
+      /* Hide desktop-only controls from toolbar to prevent cut-off */
+      #screenBtn, #handBtn, #rosterToggleBtn, #chatToggleBtn, #fullscreenBtn {
+        display: none !important;
+      }
+
+      /* Reduce buttons size so it fits perfectly on all Androids */
+      .controls-bar {
+        padding: 8px 16px;
+        gap: 8px;
+        border-radius: 16px;
+        bottom: 20px;
+      }
+
+      .control-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+      }
+
+      .mobile-menu-item {
+        display: flex !important;
+      }
+    }
+
+    @media (min-width: 601px) {
+      /* Hide adaptive mobile controls in the dropdown for desktop view */
+      .mobile-menu-item {
+        display: none !important;
+      }
     }
 
     /* SIDE PANEL */
@@ -695,7 +729,7 @@
       z-index: 5000;
       flex-direction: column;
       gap: 14px;
-      width: 85vw;
+      width: 95vw;
       max-width: 900px;
     }
 
@@ -807,8 +841,18 @@
 
       <!-- MORE OPTIONS DROPDOWN -->
       <div class="more-menu" id="moreMenu" style="display: none;">
-        <button onclick="triggerLocalRecord()"><span id="recordMenuLabel">📹 Record Meeting</span></button>
+        <!-- Recording (Teacher only) -->
+        <button id="recordMenuBtn" onclick="triggerLocalRecord()"><span id="recordMenuLabel">📹 Record Meeting</span></button>
+        <!-- Drawing Board -->
         <button onclick="toggleWhiteboard()"><span id="whiteboardMenuLabel">🎨 Open Whiteboard</span></button>
+        
+        <!-- Mobile adaptive items (Visible on phone instead of the toolbar items) -->
+        <button class="mobile-menu-item" id="menuChatBtn" onclick="toggleSidePanelFromMenu('chat')">💬 Live Chat</button>
+        <button class="mobile-menu-item" id="menuRosterBtn" onclick="toggleSidePanelFromMenu('roster')">👥 Students List</button>
+        <button class="mobile-menu-item" id="menuScreenBtn" onclick="toggleScreenShareFromMenu()">🖥️ Share Screen</button>
+        <button class="mobile-menu-item" id="menuHandBtn" onclick="toggleRaiseHandFromMenu()">✋ Raise Hand</button>
+        <button class="mobile-menu-item" id="menuFullscreenBtn" onclick="toggleFullscreenFromMenu()">⛶ Fullscreen</button>
+        
         <button onclick="alert('Google Meet layout preset applied!')">🖼️ Change Layout</button>
         <button onclick="alert('Camera: Default Video Device\nMicrophone: Default Audio Input')">⚙️ Settings</button>
       </div>
@@ -946,7 +990,6 @@
 
     // Set up Lobby screen
     async function initLobby() {
-      // Name validation: Lock display name to student's registered name
       const localUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
       
       if (role !== 'publisher') {
@@ -961,9 +1004,13 @@
         document.getElementById('lobbyNameInput').disabled = true;
         document.getElementById('lobbyNameInput').style.opacity = '0.7';
         
-        // Hide participants button for students
+        // Hide participants button & roster panel for students
         document.getElementById('rosterToggleBtn').style.display = 'none';
         document.getElementById('tabRoster').style.display = 'none';
+        document.getElementById('menuRosterBtn').style.display = 'none';
+        
+        // Hide recording button for students
+        document.getElementById('recordMenuBtn').style.display = 'none';
       } else {
         if (displayName) {
           document.getElementById('lobbyNameInput').value = displayName;
@@ -1116,6 +1163,27 @@
         fsBtn.classList.remove('active');
         fsBtn.title = "Fullscreen";
       }
+    }
+
+    // Mobile specific menu toggles to prevent button cutoff
+    function toggleSidePanelFromMenu(tab) {
+      toggleMoreMenu();
+      toggleSidePanel(tab);
+    }
+
+    function toggleScreenShareFromMenu() {
+      toggleMoreMenu();
+      toggleScreenShare();
+    }
+
+    function toggleRaiseHandFromMenu() {
+      toggleMoreMenu();
+      toggleRaiseHand();
+    }
+
+    function toggleFullscreenFromMenu() {
+      toggleMoreMenu();
+      toggleFullscreen();
     }
 
     // ─────────────────────────────────────────────────────────────
