@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Live Class — MPULSE DIGITAL AI</title>
+  <title>Google Meet Room — MPULSE DIGITAL AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
   <style>
@@ -43,7 +43,7 @@
     /* HEADER */
     header {
       height: 70px;
-      background: rgba(24, 24, 27, 0.8);
+      background: rgba(24, 24, 27, 0.85);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -253,6 +253,7 @@
       display: none; /* Shown after joining */
       position: relative;
       height: calc(100vh - 70px);
+      width: 100%;
     }
 
     /* VIDEO ZONE */
@@ -265,6 +266,7 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
+      height: 100%;
     }
 
     /* VIDEO GRID */
@@ -290,11 +292,6 @@
       aspect-ratio: 16/9;
       box-shadow: var(--shadow);
       transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-    }
-
-    .video-card.active-speaker {
-      border-color: var(--cyan);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
     }
 
     .video-card-player {
@@ -369,21 +366,45 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
+    .video-card-hand-raised {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(245, 158, 11, 0.95);
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      z-index: 5;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes bounceIn {
+      from { transform: scale(0.3); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
     /* CONTROLS BAR */
     .controls-bar {
       position: absolute;
-      bottom: 40px;
+      bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(24, 24, 27, 0.85);
-      backdrop-filter: blur(16px);
+      background: rgba(20, 20, 23, 0.85);
+      backdrop-filter: blur(24px);
       border: 1px solid var(--border-strong);
-      border-radius: 100px;
-      padding: 10px 28px;
+      border-radius: 24px;
+      padding: 12px 24px;
       display: flex;
-      gap: 14px;
+      gap: 12px;
       align-items: center;
-      box-shadow: var(--shadow);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
       z-index: 100;
     }
 
@@ -424,16 +445,50 @@
       background: var(--danger);
       color: #fff;
       border: none;
-      width: auto;
-      padding: 0 24px;
-      border-radius: 100px;
-      font-weight: 700;
-      font-size: 13.5px;
+      font-size: 20px;
     }
 
     .control-btn.leave-btn:hover {
       background: #dc2626;
-      transform: translateY(-2px);
+      transform: scale(1.08);
+    }
+
+    /* MORE OPTIONS MENU */
+    .more-menu {
+      position: absolute;
+      bottom: 95px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: var(--shadow);
+      z-index: 200;
+      width: 200px;
+    }
+
+    .more-menu button {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 13.5px;
+      font-family: inherit;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s;
+    }
+
+    .more-menu button:hover {
+      background: rgba(255, 255, 255, 0.08);
     }
 
     /* SIDE PANEL */
@@ -441,9 +496,10 @@
       width: 360px;
       background: var(--surface);
       border-left: 1px solid var(--border);
-      display: flex;
+      display: none; /* Hidden by default togglable like Google Meet */
       flex-direction: column;
       z-index: 5;
+      height: 100%;
     }
 
     .panel-tabs {
@@ -624,6 +680,66 @@
       color: var(--cyan-light);
       border: 1px solid rgba(6, 182, 212, 0.2);
     }
+
+    /* COLLABORATIVE WHITEBOARD MODAL */
+    .whiteboard-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      z-index: 5000;
+      flex-direction: column;
+      gap: 14px;
+      width: 85vw;
+      max-width: 900px;
+    }
+
+    .whiteboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .whiteboard-header h3 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+    }
+
+    .whiteboard-close {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    #whiteboardCanvas {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--border-strong);
+      cursor: crosshair;
+      width: 100%;
+      aspect-ratio: 16/10;
+    }
+
+    .whiteboard-toolbar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .whiteboard-toolbar button {
+      padding: 8px 16px;
+      background: var(--surface-card);
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      border-radius: 8px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -676,11 +792,24 @@
 
       <!-- CONTROLS BAR -->
       <div class="controls-bar">
-        <button class="control-btn" id="micBtn" onclick="toggleMic()" title="Toggle Mic">🎙️</button>
+        <button class="control-btn" id="micBtn" onclick="toggleMic()" title="Mute/Unmute Mic">🎙️</button>
         <button class="control-btn" id="camBtn" onclick="toggleCam()" title="Toggle Camera">📷</button>
         <button class="control-btn" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen">🖥️</button>
-        <button class="control-btn" id="recordBtn" onclick="toggleRecording()" title="Record Class" style="display:none;">📹</button>
-        <button class="control-btn leave-btn" onclick="leaveChannel()">Leave Classroom</button>
+        <button class="control-btn" id="handBtn" onclick="toggleRaiseHand()" title="Raise Hand">✋</button>
+        <button class="control-btn" id="moreBtn" onclick="toggleMoreMenu()" title="More Options">⋮</button>
+        <button class="control-btn leave-btn" id="leaveBtn" onclick="leaveChannel()" title="End Call">☎️</button>
+        
+        <!-- Toggle Chat/Roster buttons in Google Meet Toolbar -->
+        <button class="control-btn" id="rosterToggleBtn" onclick="toggleSidePanel('roster')" title="View Participants">👥</button>
+        <button class="control-btn" id="chatToggleBtn" onclick="toggleSidePanel('chat')" title="In-Meeting Chat">💬</button>
+      </div>
+
+      <!-- MORE OPTIONS DROPDOWN -->
+      <div class="more-menu" id="moreMenu" style="display: none;">
+        <button onclick="triggerLocalRecord()"><span id="recordMenuLabel">📹 Record Meeting</span></button>
+        <button onclick="toggleWhiteboard()"><span id="whiteboardMenuLabel">🎨 Open Whiteboard</span></button>
+        <button onclick="alert('Google Meet layout preset applied!')">🖼️ Change Layout</button>
+        <button onclick="alert('Camera: Default Video Device\nMicrophone: Default Audio Input')">⚙️ Settings</button>
       </div>
     </div>
 
@@ -704,6 +833,22 @@
       <div class="roster-container" id="panelRosterContent"></div>
     </div>
 
+  </div>
+
+  <!-- COLLABORATIVE WHITEBOARD MODAL -->
+  <div class="whiteboard-modal" id="whiteboardModal" style="display: none;">
+    <div class="whiteboard-header">
+      <h3>Interactive Whiteboard</h3>
+      <button class="whiteboard-close" onclick="toggleWhiteboard()">❌</button>
+    </div>
+    <canvas id="whiteboardCanvas"></canvas>
+    <div class="whiteboard-toolbar">
+      <button onclick="clearWhiteboard()">Clear Canvas</button>
+      <label style="font-size:12px;">Brush Color:</label>
+      <input type="color" id="whiteboardColor" value="#8b5cf6">
+      <label style="font-size:12px;">Brush Size:</label>
+      <input type="range" id="whiteboardBrush" min="2" max="20" value="5">
+    </div>
   </div>
 
   <!-- AGORA SDK -->
@@ -741,19 +886,50 @@
     let isCamOff = false;
     let isScreenSharing = false;
     let screenTrack = null;
-    let mediaRecorder = null;
-    let recordedChunks = [];
-    let isRecording = false;
+    let handRaised = false;
     
     // Roster / Participant name cache (UID => Name)
     let participantNameMap = {};
 
+    // Recording variables
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
     // Switch Panel (Chat vs Roster)
+    let sidePanelOpen = false;
+    let currentPanelTab = '';
+
+    function toggleSidePanel(tab) {
+      const panel = document.querySelector('.side-panel');
+      const chatToggle = document.getElementById('chatToggleBtn');
+      const rosterToggle = document.getElementById('rosterToggleBtn');
+      
+      if (!sidePanelOpen) {
+        panel.style.display = 'flex';
+        sidePanelOpen = true;
+        switchPanel(tab);
+      } else if (currentPanelTab === tab) {
+        panel.style.display = 'none';
+        sidePanelOpen = false;
+        currentPanelTab = '';
+      } else {
+        switchPanel(tab);
+      }
+      
+      chatToggle.classList.toggle('active', sidePanelOpen && currentPanelTab === 'chat');
+      rosterToggle.classList.toggle('active', sidePanelOpen && currentPanelTab === 'roster');
+    }
+
     function switchPanel(panel) {
+      currentPanelTab = panel;
       document.getElementById('tabChat').classList.toggle('active', panel === 'chat');
       document.getElementById('tabRoster').classList.toggle('active', panel === 'roster');
       document.getElementById('panelChatContent').style.display = panel === 'chat' ? 'flex' : 'none';
       document.getElementById('panelRosterContent').style.display = panel === 'roster' ? 'flex' : 'none';
+      
+      document.getElementById('chatToggleBtn').classList.toggle('active', sidePanelOpen && currentPanelTab === 'chat');
+      document.getElementById('rosterToggleBtn').classList.toggle('active', sidePanelOpen && currentPanelTab === 'roster');
     }
 
     // Set up Lobby screen
@@ -903,13 +1079,10 @@
         await fetch(`${BACKEND_URL}/api/classroom/register-name`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ channelName, uid: myUid, name: displayName, role })
+          body: JSON.stringify({ channelName, uid: myUid, name: displayName, role, handRaised: false })
         });
         
-        participantNameMap[myUid] = { name: displayName, role };
-        if (role === 'publisher') {
-          document.getElementById('recordBtn').style.display = 'flex';
-        }
+        participantNameMap[myUid] = { name: displayName, role, handRaised: false };
 
         pollRosterNames();
         setInterval(pollRosterNames, 5000);
@@ -966,6 +1139,7 @@
           <div class="video-card-avatar-inner">${initial}</div>
         </div>
         <div class="video-card-muted-icon" id="muted-${uid}" style="display: none;">🔇</div>
+        <div class="video-card-hand-raised" id="hand-raised-${uid}" style="display: none;">✋</div>
         <div class="video-card-name">
           <span>${name} ${isMe ? '(You)' : ''}</span>
         </div>
@@ -999,7 +1173,7 @@
       const uid = user.uid;
       await client.subscribe(user, mediaType);
       
-      const pInfo = participantNameMap[uid] || { name: `User ${uid}`, role: 'student' };
+      const pInfo = participantNameMap[uid] || { name: `User ${uid}`, role: 'student', handRaised: false };
 
       if (mediaType === 'video') {
         createVideoCard(uid, pInfo.name);
@@ -1136,109 +1310,183 @@
       }
     }
 
-    // Recording controls (Google Meet style local recording)
-    async function startRecording() {
+    // Google Meet Raise Hand Support
+    async function toggleRaiseHand() {
+      const handBtn = document.getElementById('handBtn');
+      handRaised = !handRaised;
+      
+      const handOverlay = document.getElementById(`hand-raised-${myUid}`);
+      if (handOverlay) {
+        handOverlay.style.display = handRaised ? 'flex' : 'none';
+      }
+      
+      handBtn.classList.toggle('active', handRaised);
+      
       try {
-        console.log("Initializing local classroom recording...");
-        
-        // 1. Capture the meeting screen/tab video & audio (system audio)
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({
-          video: { cursor: "always" },
-          audio: true // Captures tab/system audio (includes remote students!)
+        await fetch(`${BACKEND_URL}/api/classroom/register-name`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channelName, uid: myUid, name: displayName, role, handRaised })
         });
-        
-        // 2. Capture the teacher's local microphone audio
-        const micStream = await navigator.mediaDevices.getUserMedia({
-          audio: true
-        });
-        
-        // 3. Mix screen audio and mic audio into one stream
-        const combinedStream = new MediaStream();
-        
-        // Add screen video track
-        combinedStream.addTrack(screenStream.getVideoTracks()[0]);
-        
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const dest = audioContext.createMediaStreamDestination();
-        
-        const micSource = audioContext.createMediaStreamSource(micStream);
-        micSource.connect(dest);
-        
-        if (screenStream.getAudioTracks().length > 0) {
-          const screenAudioSource = audioContext.createMediaStreamSource(screenStream);
-          screenAudioSource.connect(dest);
-        }
-        
-        combinedStream.addTrack(dest.stream.getAudioTracks()[0]);
-        
-        // Store streams to stop them on completion
-        window.recordingStreams = { screenStream, micStream, audioContext };
-        
-        recordedChunks = [];
-        mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
-        
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0) {
-            recordedChunks.push(event.data);
-          }
-        };
-        
-        mediaRecorder.onstop = () => {
-          screenStream.getTracks().forEach(t => t.stop());
-          micStream.getTracks().forEach(t => t.stop());
-          audioContext.close();
-          
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `Class_Recording_${channelName}_${Date.now()}.webm`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          
-          alert("Recording saved to your Downloads folder! You can upload this recording file inside your Student Portal Admin dashboard.");
-        };
-        
-        mediaRecorder.start();
-        isRecording = true;
-        
-        const recBtn = document.getElementById('recordBtn');
-        recBtn.classList.add('active');
-        recBtn.textContent = '⏹️';
-        recBtn.title = 'Stop Recording';
-        recBtn.style.color = '#ef4444';
-        
       } catch (err) {
-        console.error("Recording start error:", err);
-        alert("Failed to start recording. Please make sure to share your screen/tab to enable screen recording.");
+        console.warn('Could not register raised hand:', err);
       }
     }
 
-    function stopRecording() {
-      if (mediaRecorder && isRecording) {
+    // Three-dot Options Menu
+    function toggleMoreMenu() {
+      const menu = document.getElementById('moreMenu');
+      const isHidden = menu.style.display === 'none';
+      menu.style.display = isHidden ? 'flex' : 'none';
+    }
+
+    // Local screen recording trigger (Google Meet style)
+    async function triggerLocalRecord() {
+      toggleMoreMenu(); // Hide menu
+      const recordLabel = document.getElementById('recordMenuLabel');
+      
+      if (!isRecording) {
+        try {
+          console.log("Initializing local classroom recording...");
+          
+          // 1. Capture the meeting screen/tab video & audio (system audio)
+          const screenStream = await navigator.mediaDevices.getDisplayMedia({
+            video: { cursor: "always" },
+            audio: true 
+          });
+          
+          // 2. Capture local microphone audio
+          const micStream = await navigator.mediaDevices.getUserMedia({
+            audio: true
+          });
+          
+          // 3. Mix screen audio and mic audio into one stream
+          const combinedStream = new MediaStream();
+          combinedStream.addTrack(screenStream.getVideoTracks()[0]);
+          
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const dest = audioContext.createMediaStreamDestination();
+          
+          const micSource = audioContext.createMediaStreamSource(micStream);
+          micSource.connect(dest);
+          
+          if (screenStream.getAudioTracks().length > 0) {
+            const screenAudioSource = audioContext.createMediaStreamSource(screenStream);
+            screenAudioSource.connect(dest);
+          }
+          
+          combinedStream.addTrack(dest.stream.getAudioTracks()[0]);
+          
+          window.recordingStreams = { screenStream, micStream, audioContext };
+          
+          recordedChunks = [];
+          mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+          
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+              recordedChunks.push(event.data);
+            }
+          };
+          
+          mediaRecorder.onstop = () => {
+            screenStream.getTracks().forEach(t => t.stop());
+            micStream.getTracks().forEach(t => t.stop());
+            audioContext.close();
+            
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Class_Recording_${channelName}_${Date.now()}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert("Recording saved to your Downloads folder! You can upload this recording file inside your Student Portal Admin dashboard.");
+          };
+          
+          mediaRecorder.start();
+          isRecording = true;
+          recordLabel.textContent = '⏹️ Stop Recording';
+          
+        } catch (err) {
+          console.error("Recording start error:", err);
+          alert("Failed to start recording. Please make sure to share your screen/tab to enable screen recording.");
+        }
+      } else {
         mediaRecorder.stop();
         isRecording = false;
-        
-        const recBtn = document.getElementById('recordBtn');
-        recBtn.classList.remove('active');
-        recBtn.textContent = '📹';
-        recBtn.title = 'Record Class';
-        recBtn.style.color = '';
+        recordLabel.textContent = '📹 Record Meeting';
       }
     }
 
-    function toggleRecording() {
-      if (!isRecording) {
-        startRecording();
-      } else {
-        stopRecording();
+    // Whiteboard modal
+    let isDrawing = false;
+    let canvas, ctx;
+
+    function initWhiteboard() {
+      canvas = document.getElementById('whiteboardCanvas');
+      ctx = canvas.getContext('2d');
+      
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      
+      ctx.strokeStyle = '#8b5cf6';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDraw);
+      canvas.addEventListener('mouseout', stopDraw);
+      
+      canvas.addEventListener('touchstart', (e) => startDraw(e.touches[0]));
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        draw(e.touches[0]);
+      });
+      canvas.addEventListener('touchend', stopDraw);
+    }
+
+    function startDraw(e) {
+      isDrawing = true;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const rect = canvas.getBoundingClientRect();
+      ctx.strokeStyle = document.getElementById('whiteboardColor').value;
+      ctx.lineWidth = document.getElementById('whiteboardBrush').value;
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      ctx.stroke();
+    }
+
+    function stopDraw() {
+      isDrawing = false;
+    }
+
+    function clearWhiteboard() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function toggleWhiteboard() {
+      toggleMoreMenu(); // Close options menu
+      const modal = document.getElementById('whiteboardModal');
+      const isHidden = modal.style.display === 'none';
+      modal.style.display = isHidden ? 'flex' : 'none';
+      if (isHidden) {
+        setTimeout(initWhiteboard, 100);
       }
     }
 
     async function leaveChannel() {
-      stopRecording();
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+      }
       if (screenTrack) {
         screenTrack.stop();
         screenTrack.close();
@@ -1257,6 +1505,7 @@
       window.location.href = role === 'publisher' ? 'admin.html' : 'student.html';
     }
 
+    // Roster participant name & raised-hand polling
     async function pollRosterNames() {
       try {
         const res = await fetch(`${BACKEND_URL}/api/classroom/names?channelName=${channelName}`);
@@ -1270,11 +1519,18 @@
         let activeStudents = 0;
 
         data.mappings.forEach(m => {
-          participantNameMap[m.uid] = { name: m.name, role: m.role };
+          participantNameMap[m.uid] = { name: m.name, role: m.role, handRaised: m.handRaised };
           
+          // Update display card labels
           const nameSpan = document.querySelector(`#video-card-${m.uid} .video-card-name span`);
           if (nameSpan) {
             nameSpan.textContent = `${m.name} ${m.uid === myUid ? '(You)' : ''}`;
+          }
+
+          // Update hand raised overlay
+          const handOverlay = document.getElementById(`hand-raised-${m.uid}`);
+          if (handOverlay) {
+            handOverlay.style.display = m.handRaised ? 'flex' : 'none';
           }
 
           const isTeacher = m.role === 'publisher';
@@ -1288,7 +1544,7 @@
             <div class="roster-item">
               <div class="roster-left">
                 <div class="avatar" style="${isTeacher ? 'background:var(--cyan)' : ''}">${avatarLetter}</div>
-                <span class="roster-name">${m.name} ${m.uid === myUid ? '(You)' : ''}</span>
+                <span class="roster-name">${m.name} ${m.uid === myUid ? '(You)' : ''} ${m.handRaised ? '✋' : ''}</span>
               </div>
               <span class="roster-role ${roleClass}">${roleLabel}</span>
             </div>
