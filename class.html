@@ -679,6 +679,7 @@
         <button class="control-btn" id="micBtn" onclick="toggleMic()" title="Toggle Mic">🎙️</button>
         <button class="control-btn" id="camBtn" onclick="toggleCam()" title="Toggle Camera">📷</button>
         <button class="control-btn" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen">🖥️</button>
+        <button class="control-btn" id="recordBtn" onclick="toggleRecording()" title="Record Class" style="display:none;">📹</button>
         <button class="control-btn leave-btn" onclick="leaveChannel()">Leave Classroom</button>
       </div>
     </div>
@@ -740,6 +741,9 @@
     let isCamOff = false;
     let isScreenSharing = false;
     let screenTrack = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
     
     // Roster / Participant name cache (UID => Name)
     let participantNameMap = {};
@@ -903,6 +907,9 @@
         });
         
         participantNameMap[myUid] = { name: displayName, role };
+        if (role === 'publisher') {
+          document.getElementById('recordBtn').style.display = 'flex';
+        }
 
         pollRosterNames();
         setInterval(pollRosterNames, 5000);
@@ -1129,7 +1136,109 @@
       }
     }
 
+    // Recording controls (Google Meet style local recording)
+    async function startRecording() {
+      try {
+        console.log("Initializing local classroom recording...");
+        
+        // 1. Capture the meeting screen/tab video & audio (system audio)
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: "always" },
+          audio: true // Captures tab/system audio (includes remote students!)
+        });
+        
+        // 2. Capture the teacher's local microphone audio
+        const micStream = await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+        
+        // 3. Mix screen audio and mic audio into one stream
+        const combinedStream = new MediaStream();
+        
+        // Add screen video track
+        combinedStream.addTrack(screenStream.getVideoTracks()[0]);
+        
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const dest = audioContext.createMediaStreamDestination();
+        
+        const micSource = audioContext.createMediaStreamSource(micStream);
+        micSource.connect(dest);
+        
+        if (screenStream.getAudioTracks().length > 0) {
+          const screenAudioSource = audioContext.createMediaStreamSource(screenStream);
+          screenAudioSource.connect(dest);
+        }
+        
+        combinedStream.addTrack(dest.stream.getAudioTracks()[0]);
+        
+        // Store streams to stop them on completion
+        window.recordingStreams = { screenStream, micStream, audioContext };
+        
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = () => {
+          screenStream.getTracks().forEach(t => t.stop());
+          micStream.getTracks().forEach(t => t.stop());
+          audioContext.close();
+          
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Class_Recording_${channelName}_${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          alert("Recording saved to your Downloads folder! You can upload this recording file inside your Student Portal Admin dashboard.");
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        
+        const recBtn = document.getElementById('recordBtn');
+        recBtn.classList.add('active');
+        recBtn.textContent = '⏹️';
+        recBtn.title = 'Stop Recording';
+        recBtn.style.color = '#ef4444';
+        
+      } catch (err) {
+        console.error("Recording start error:", err);
+        alert("Failed to start recording. Please make sure to share your screen/tab to enable screen recording.");
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        const recBtn = document.getElementById('recordBtn');
+        recBtn.classList.remove('active');
+        recBtn.textContent = '📹';
+        recBtn.title = 'Record Class';
+        recBtn.style.color = '';
+      }
+    }
+
+    function toggleRecording() {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecording();
+      }
+    }
+
     async function leaveChannel() {
+      stopRecording();
       if (screenTrack) {
         screenTrack.stop();
         screenTrack.close();
