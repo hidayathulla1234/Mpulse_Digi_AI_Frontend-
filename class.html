@@ -261,26 +261,68 @@
       flex: 1;
       background: #020205;
       position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      display: grid;
+      grid-template-columns: 1fr; /* Default dynamic grid */
+      gap: 20px;
       padding: 20px;
       height: 100%;
+      overflow: hidden;
     }
 
-    /* VIDEO GRID */
-    #video-grid {
+    /* LAYOUT SPECIFICS */
+    .video-zone.layout-sidebar {
+      display: grid;
+      grid-template-columns: 3.5fr 1fr;
+      gap: 20px;
+    }
+    
+    .video-zone.layout-sidebar.no-students {
+      grid-template-columns: 1fr;
+    }
+    
+    .video-zone.layout-sidebar #sidebar-videos-area {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .video-zone.layout-spotlight {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    
+    .video-zone.layout-spotlight #sidebar-videos-area {
+      display: none !important;
+    }
+    
+    .video-zone.layout-auto, .video-zone.layout-tiled {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    
+    .video-zone.layout-auto #sidebar-videos-area, 
+    .video-zone.layout-tiled #sidebar-videos-area {
+      display: none !important;
+    }
+
+    #main-presenter-area {
       width: 100%;
       height: 100%;
-      max-width: 1100px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #sidebar-videos-area {
+      width: 100%;
+      height: 100%;
+      display: none; /* Only visible in Sidebar layout */
+      flex-direction: column;
       gap: 16px;
       overflow-y: auto;
-      align-content: center;
-      justify-content: center;
-      padding: 10px;
+      padding-right: 4px;
     }
 
     .video-card {
@@ -292,6 +334,18 @@
       aspect-ratio: 16/9;
       box-shadow: var(--shadow);
       transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    /* Sidebar Thumbnail layouts */
+    .video-zone.layout-sidebar #main-presenter-area .video-card {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+
+    .video-zone.layout-sidebar #sidebar-videos-area .video-card {
+      width: 100%;
+      flex-shrink: 0;
     }
 
     .video-card-player {
@@ -499,7 +553,25 @@
         display: none !important;
       }
 
-      /* Reduce buttons size so it fits perfectly on all Androids */
+      /* Stack video cards vertically on mobile */
+      .video-zone {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 2.5fr 1fr;
+        gap: 12px;
+      }
+      
+      #sidebar-videos-area {
+        flex-direction: row !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        height: auto;
+      }
+
+      #sidebar-videos-area .video-card {
+        width: 140px;
+        height: 80px;
+      }
+
       .controls-bar {
         padding: 8px 16px;
         gap: 8px;
@@ -774,6 +846,198 @@
       border-radius: 8px;
       cursor: pointer;
     }
+
+    /* ── ADJUST VIEW MODAL STYLES ── */
+    .adjust-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 6000;
+    }
+    
+    .adjust-modal {
+      background: #ffffff;
+      color: #202124;
+      border-radius: 16px;
+      padding: 24px 28px;
+      width: 360px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      font-family: 'DM Sans', sans-serif;
+    }
+    
+    .adjust-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    
+    .adjust-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #202124;
+      font-family: 'Outfit', sans-serif;
+    }
+    
+    .adjust-modal-subtitle {
+      font-size: 13px;
+      color: #5f6368;
+      margin-top: 2px;
+    }
+    
+    .adjust-modal-close {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: #5f6368;
+      font-size: 18px;
+      padding: 4px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    
+    .adjust-modal-close:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    .adjust-layout-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .adjust-layout-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 4px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    
+    .adjust-layout-row:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+    
+    .adjust-radio-outer {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+    
+    .adjust-radio-outer.selected {
+      border-color: #1a73e8;
+    }
+    
+    .adjust-radio-inner {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #1a73e8;
+    }
+    
+    .adjust-layout-label {
+      flex: 1;
+      font-size: 14px;
+      color: #202124;
+      font-weight: 400;
+    }
+    
+    .adjust-layout-label.selected {
+      font-weight: 600;
+    }
+    
+    .adjust-preview-box {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 3px;
+      background: #f8f9fa;
+      display: flex;
+    }
+    
+    .adjust-divider {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 16px 0;
+    }
+    
+    .adjust-tiles-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #202124;
+      margin-bottom: 2px;
+    }
+    
+    .adjust-tiles-subtitle {
+      font-size: 12px;
+      color: #5f6368;
+      margin-bottom: 10px;
+    }
+    
+    .adjust-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .adjust-slider {
+      flex: 1;
+      accent-color: #1a73e8;
+      cursor: pointer;
+    }
+    
+    .adjust-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .adjust-toggle-label {
+      font-size: 14px;
+      color: #202124;
+    }
+    
+    .adjust-toggle-switch {
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: #ccc;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .adjust-toggle-switch.active {
+      background: #1a73e8;
+    }
+    
+    .adjust-toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .adjust-toggle-switch.active .adjust-toggle-knob {
+      transform: translateX(20px);
+    }
   </style>
 </head>
 <body>
@@ -822,7 +1086,8 @@
 
     <!-- VIDEO ZONE -->
     <div class="video-zone">
-      <div id="video-grid"></div>
+      <div id="main-presenter-area"></div>
+      <div id="sidebar-videos-area"></div>
 
       <!-- CONTROLS BAR -->
       <div class="controls-bar">
@@ -853,7 +1118,7 @@
         <button class="mobile-menu-item" id="menuHandBtn" onclick="toggleRaiseHandFromMenu()">✋ Raise Hand</button>
         <button class="mobile-menu-item" id="menuFullscreenBtn" onclick="toggleFullscreenFromMenu()">⛶ Fullscreen</button>
         
-        <button onclick="alert('Google Meet layout preset applied!')">🖼️ Change Layout</button>
+        <button onclick="openAdjustViewModal()">🖼️ Adjust view</button>
         <button onclick="alert('Camera: Default Video Device\nMicrophone: Default Audio Input')">⚙️ Settings</button>
       </div>
     </div>
@@ -896,7 +1161,110 @@
     </div>
   </div>
 
-  <!-- AGORA SDK -->
+  <!-- ADJUST VIEW MODAL (Google Meet Style) -->
+  <div class="adjust-modal-overlay" id="adjustViewModal" style="display: none;" onclick="closeAdjustViewModal()">
+    <div class="adjust-modal" onclick="event.stopPropagation()">
+      <div class="adjust-modal-header">
+        <div>
+          <div class="adjust-modal-title">Adjust view</div>
+          <div class="adjust-modal-subtitle">Selection is saved for future meetings</div>
+        </div>
+        <button class="adjust-modal-close" onclick="closeAdjustViewModal()">❌</button>
+      </div>
+
+      <div class="adjust-layout-list">
+        <!-- Auto (dynamic) -->
+        <label class="adjust-layout-row" onclick="selectLayoutPreset('auto')">
+          <div class="adjust-radio-outer" id="radio-auto">
+            <div class="adjust-radio-inner" id="radio-inner-auto" style="display: none;"></div>
+          </div>
+          <span class="adjust-layout-label" id="label-auto">Auto (dynamic) ✨</span>
+          <div class="adjust-preview-box">
+            <svg width="52" height="36" viewBox="0 0 52 36" fill="none">
+              <rect x="1" y="1" width="23" height="16" rx="2" fill="#ccc"/>
+              <rect x="27" y="1" width="24" height="16" rx="2" fill="#ccc"/>
+              <rect x="1" y="20" width="15" height="15" rx="2" fill="#ddd"/>
+              <rect x="19" y="20" width="15" height="15" rx="2" fill="#ddd"/>
+              <rect x="37" y="20" width="14" height="15" rx="2" fill="#ddd"/>
+            </svg>
+          </div>
+        </label>
+
+        <!-- Tiled (legacy) -->
+        <label class="adjust-layout-row" onclick="selectLayoutPreset('tiled')">
+          <div class="adjust-radio-outer" id="radio-tiled">
+            <div class="adjust-radio-inner" id="radio-inner-tiled" style="display: none;"></div>
+          </div>
+          <span class="adjust-layout-label" id="label-tiled">Tiled (legacy)</span>
+          <div class="adjust-preview-box">
+            <svg width="52" height="36" viewBox="0 0 52 36" fill="none">
+              <rect x="1" y="1" width="16" height="10" rx="1.5" fill="#ccc"/>
+              <rect x="18" y="1" width="16" height="10" rx="1.5" fill="#ccc"/>
+              <rect x="35" y="1" width="16" height="10" rx="1.5" fill="#ccc"/>
+              <rect x="1" y="12" width="16" height="10" rx="1.5" fill="#ccc"/>
+              <rect x="18" y="12" width="16" height="10" rx="1.5" fill="#ccc"/>
+              <rect x="35" y="12" width="16" height="10" rx="1.5" fill="#ccc"/>
+              <rect x="1" y="23" width="16" height="10" rx="1.5" fill="#ccc"/>
+              <rect x="18" y="23" width="16" height="10" rx="1.5" fill="#ccc"/>
+              <rect x="35" y="23" width="16" height="10" rx="1.5" fill="#ccc"/>
+            </svg>
+          </div>
+        </label>
+
+        <!-- Spotlight -->
+        <label class="adjust-layout-row" onclick="selectLayoutPreset('spotlight')">
+          <div class="adjust-radio-outer" id="radio-spotlight">
+            <div class="adjust-radio-inner" id="radio-inner-spotlight" style="display: none;"></div>
+          </div>
+          <span class="adjust-layout-label" id="label-spotlight">Spotlight</span>
+          <div class="adjust-preview-box">
+            <svg width="52" height="36" viewBox="0 0 52 36" fill="none">
+              <rect x="1" y="1" width="50" height="34" rx="2" fill="#ccc"/>
+            </svg>
+          </div>
+        </label>
+
+        <!-- Sidebar -->
+        <label class="adjust-layout-row" onclick="selectLayoutPreset('sidebar')">
+          <div class="adjust-radio-outer" id="radio-sidebar">
+            <div class="adjust-radio-inner" id="radio-inner-sidebar" style="display: none;"></div>
+          </div>
+          <span class="adjust-layout-label" id="label-sidebar">Sidebar</span>
+          <div class="adjust-preview-box">
+            <svg width="52" height="36" viewBox="0 0 52 36" fill="none">
+              <rect x="1" y="1" width="36" height="34" rx="2" fill="#ccc"/>
+              <rect x="40" y="1" width="11" height="10" rx="1.5" fill="#ddd"/>
+              <rect x="40" y="14" width="11" height="10" rx="1.5" fill="#ddd"/>
+              <rect x="40" y="26" width="11" height="9" rx="1.5" fill="#ddd"/>
+            </svg>
+          </div>
+        </label>
+      </div>
+
+      <div class="adjust-divider"></div>
+
+      <div class="adjust-tiles-section">
+        <div class="adjust-tiles-title">Tiles</div>
+        <div class="adjust-tiles-subtitle" id="tilesSizeSubtitle">Drag to change tile size</div>
+        <div class="adjust-slider-row">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="7" height="5" rx="1" fill="#aaa"/><rect x="11" y="4" width="7" height="5" rx="1" fill="#aaa"/><rect x="2" y="11" width="7" height="5" rx="1" fill="#aaa"/><rect x="11" y="11" width="7" height="5" rx="1" fill="#aaa"/></svg>
+          <input type="range" class="adjust-slider" id="tileSizeSlider" min="1" max="5" value="3">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="5" height="5" rx="0.8" fill="#aaa"/><rect x="8" y="2" width="5" height="5" rx="0.8" fill="#aaa"/><rect x="14" y="2" width="5" height="5" rx="0.8" fill="#aaa"/><rect x="2" y="8" width="5" height="5" rx="0.8" fill="#aaa"/><rect x="8" y="8" width="5" height="5" rx="0.8" fill="#aaa"/><rect x="14" y="8" width="5" height="5" rx="0.8" fill="#aaa"/><rect x="2" y="14" width="5" height="5" rx="0.8" fill="#aaa"/><rect x="8" y="14" width="5" height="5" rx="0.8" fill="#aaa"/><rect x="14" y="14" width="5" height="5" rx="0.8" fill="#aaa"/></svg>
+        </div>
+      </div>
+
+      <div class="adjust-divider"></div>
+
+      <div class="adjust-toggle-row">
+        <span class="adjust-toggle-label">Hide tiles without video</span>
+        <div class="adjust-toggle-switch" id="hideVideoToggle" onclick="toggleHideTilesWithoutVideo()">
+          <div class="adjust-toggle-knob" id="hideVideoKnob"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agora SDK -->
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
   
   <!-- SCRIPT LOGIC -->
@@ -905,9 +1273,9 @@
       ? 'http://localhost:5000'
       : 'https://mpulse-digi-ai-backend.onrender.com';
     
-    // Parse URL parameters
+    // Parse URL parameters (inward mapping supports both channel and channelName)
     const params = new URLSearchParams(window.location.search);
-    const channelName = params.get('channel') || 'mpulse-live';
+    const channelName = params.get('channel') || params.get('channelName') || 'mpulse-live';
     const role = params.get('role') || 'subscriber'; // 'publisher' (teacher) or 'subscriber' (student)
     
     document.getElementById('classTitle').textContent = `Classroom: ${channelName.toUpperCase()}`;
@@ -944,6 +1312,10 @@
     // Switch Panel (Chat vs Roster)
     let sidePanelOpen = false;
     let currentPanelTab = '';
+
+    // Adjust view states
+    let currentLayoutPreset = 'auto'; // 'auto', 'tiled', 'spotlight', 'sidebar'
+    let hideTilesWithoutVideo = true;
 
     function toggleSidePanel(tab) {
       if (role !== 'publisher' && tab === 'roster') {
@@ -1182,6 +1554,143 @@
       toggleFullscreen();
     }
 
+    // Helper to determine which div container to append user video card to (Google Meet presentation style)
+    function getTargetContainer(uid, isMe) {
+      const isTeacher = (isMe && role === 'publisher') || (!isMe && participantNameMap[uid]?.role === 'publisher');
+      if (isTeacher) {
+        return document.getElementById('main-presenter-area');
+      } else {
+        return document.getElementById('sidebar-videos-area');
+      }
+    }
+
+    // ── ADJUST VIEW LOGIC ──
+    function openAdjustViewModal() {
+      toggleMoreMenu(); // Close dropdown
+      const modal = document.getElementById('adjustViewModal');
+      modal.style.display = 'flex';
+      updateAdjustModalUI();
+    }
+
+    function closeAdjustViewModal() {
+      document.getElementById('adjustViewModal').style.display = 'none';
+    }
+
+    function updateAdjustModalUI() {
+      const presets = ['auto', 'tiled', 'spotlight', 'sidebar'];
+      presets.forEach(p => {
+        document.getElementById(`radio-${p}`).classList.remove('selected');
+        document.getElementById(`radio-inner-${p}`).style.display = 'none';
+        document.getElementById(`label-${p}`).classList.remove('selected');
+      });
+      
+      document.getElementById(`radio-${currentLayoutPreset}`).classList.add('selected');
+      document.getElementById(`radio-inner-${currentLayoutPreset}`).style.display = 'block';
+      document.getElementById(`label-${currentLayoutPreset}`).classList.add('selected');
+      
+      const slider = document.getElementById('tileSizeSlider');
+      const subtitle = document.getElementById('tilesSizeSubtitle');
+      if (currentLayoutPreset === 'sidebar') {
+        slider.disabled = true;
+        subtitle.textContent = "Can't change tile size in this layout";
+      } else {
+        slider.disabled = false;
+        subtitle.textContent = "Drag to change tile size";
+      }
+      
+      const toggle = document.getElementById('hideVideoToggle');
+      if (hideTilesWithoutVideo) {
+        toggle.classList.add('active');
+      } else {
+        toggle.classList.remove('active');
+      }
+    }
+
+    function selectLayoutPreset(preset) {
+      currentLayoutPreset = preset;
+      updateAdjustModalUI();
+      applyLayoutPreset(preset);
+    }
+
+    function toggleHideTilesWithoutVideo() {
+      hideTilesWithoutVideo = !hideTilesWithoutVideo;
+      updateAdjustModalUI();
+      applyTileVisibilityFilter();
+    }
+
+    function applyTileVisibilityFilter() {
+      const cards = Array.from(document.querySelectorAll('.video-card'));
+      cards.forEach(card => {
+        const uidStr = card.id.replace('video-card-', '');
+        const uid = parseInt(uidStr, 10);
+        
+        const avatar = document.getElementById(`avatar-${uid}`);
+        const isCamOffForUser = avatar && avatar.style.display !== 'none';
+        
+        const pInfo = participantNameMap[uid] || { uid, role: (uid === myUid ? role : 'student') };
+        const isTeacher = pInfo.role === 'publisher';
+        
+        if (hideTilesWithoutVideo && isCamOffForUser && !isTeacher && uid !== myUid) {
+          card.style.display = 'none';
+        } else {
+          card.style.display = 'block';
+        }
+      });
+      adjustGridColumns();
+    }
+
+    function applyLayoutPreset(preset) {
+      const videoZone = document.querySelector('.video-zone');
+      const mainArea = document.getElementById('main-presenter-area');
+      const sidebarArea = document.getElementById('sidebar-videos-area');
+      
+      videoZone.className = 'video-zone';
+      
+      const cards = Array.from(document.querySelectorAll('.video-card'));
+      
+      cards.forEach(card => {
+        const uidStr = card.id.replace('video-card-', '');
+        const uid = parseInt(uidStr, 10);
+        const pInfo = participantNameMap[uid] || { uid, role: (uid === myUid ? role : 'student') };
+        const isTeacher = pInfo.role === 'publisher';
+        
+        if (preset === 'sidebar') {
+          if (isTeacher) {
+            mainArea.appendChild(card);
+          } else {
+            sidebarArea.appendChild(card);
+          }
+        } else if (preset === 'spotlight') {
+          if (isTeacher) {
+            mainArea.appendChild(card);
+          } else {
+            sidebarArea.appendChild(card);
+          }
+        } else {
+          mainArea.appendChild(card);
+        }
+      });
+      
+      if (preset === 'sidebar') {
+        videoZone.classList.add('layout-sidebar');
+        sidebarArea.style.display = 'flex';
+        if (sidebarArea.children.length === 0) {
+          videoZone.classList.add('no-students');
+        }
+      } else if (preset === 'spotlight') {
+        videoZone.classList.add('layout-spotlight');
+        sidebarArea.style.display = 'none';
+      } else if (preset === 'tiled') {
+        videoZone.classList.add('layout-tiled');
+        sidebarArea.style.display = 'none';
+      } else {
+        videoZone.classList.add('layout-auto');
+        sidebarArea.style.display = 'none';
+      }
+      
+      adjustGridColumns();
+    }
+
     // ─────────────────────────────────────────────────────────────
     // AGORA RTC MULTI-USER GRID INTEGRATION
     // ─────────────────────────────────────────────────────────────
@@ -1245,7 +1754,6 @@
     }
 
     function createVideoCard(uid, name, isMe = false) {
-      const grid = document.getElementById('video-grid');
       if (document.getElementById(`video-card-${uid}`)) return;
 
       const card = document.createElement('div');
@@ -1253,8 +1761,6 @@
       card.id = `video-card-${uid}`;
 
       const initial = name ? name.charAt(0).toUpperCase() : '?';
-
-      // Lock: Only show participant names if the user is the teacher
       const showNamesOverlay = (role === 'publisher');
 
       card.innerHTML = `
@@ -1269,8 +1775,28 @@
         </div>
       `;
 
-      grid.appendChild(card);
+      const mainArea = document.getElementById('main-presenter-area');
+      const sidebarArea = document.getElementById('sidebar-videos-area');
+      const isTeacher = (isMe && role === 'publisher') || (!isMe && participantNameMap[uid]?.role === 'publisher');
+
+      if (currentLayoutPreset === 'sidebar') {
+        if (isTeacher) {
+          mainArea.appendChild(card);
+        } else {
+          sidebarArea.appendChild(card);
+        }
+      } else if (currentLayoutPreset === 'spotlight') {
+        if (isTeacher) {
+          mainArea.appendChild(card);
+        } else {
+          sidebarArea.appendChild(card);
+        }
+      } else {
+        mainArea.appendChild(card);
+      }
+      
       adjustGridColumns();
+      applyTileVisibilityFilter();
     }
 
     function removeVideoCard(uid) {
@@ -1282,15 +1808,40 @@
     }
 
     function adjustGridColumns() {
-      const grid = document.getElementById('video-grid');
-      const cards = grid.children.length;
-      if (cards === 0) return;
-
-      let cols = 1;
-      if (cards >= 2 && cards <= 4) cols = 2;
-      else if (cards > 4) cols = 3;
+      const mainArea = document.getElementById('main-presenter-area');
+      const sidebar = document.getElementById('sidebar-videos-area');
+      const videoZone = document.querySelector('.video-zone');
       
-      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      if (currentLayoutPreset === 'sidebar') {
+        const visibleStudents = Array.from(sidebar.children).filter(c => c.style.display !== 'none');
+        if (visibleStudents.length === 0) {
+          videoZone.classList.add('no-students');
+        } else {
+          videoZone.classList.remove('no-students');
+        }
+      }
+      
+      if (currentLayoutPreset === 'auto' || currentLayoutPreset === 'tiled') {
+        const visibleCards = Array.from(mainArea.children).filter(c => c.style.display !== 'none');
+        const cardsCount = visibleCards.length;
+        if (cardsCount === 0) return;
+        
+        let cols = 1;
+        if (currentLayoutPreset === 'tiled') {
+          cols = Math.ceil(Math.sqrt(cardsCount));
+        } else {
+          if (cardsCount >= 2 && cardsCount <= 4) cols = 2;
+          else if (cardsCount > 4) cols = 3;
+        }
+        
+        mainArea.style.display = 'grid';
+        mainArea.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        mainArea.style.gap = '16px';
+      } else {
+        mainArea.style.display = 'flex';
+        mainArea.style.gridTemplateColumns = 'none';
+        mainArea.style.gap = '0';
+      }
     }
 
     async function handleUserPublished(user, mediaType) {
@@ -1303,6 +1854,7 @@
         createVideoCard(uid, pInfo.name);
         document.getElementById(`avatar-${uid}`).style.display = 'none';
         user.videoTrack.play(`video-player-${uid}`);
+        applyTileVisibilityFilter();
       }
 
       if (mediaType === 'audio') {
@@ -1317,6 +1869,7 @@
       if (mediaType === 'video') {
         const avatar = document.getElementById(`avatar-${uid}`);
         if (avatar) avatar.style.display = 'flex';
+        applyTileVisibilityFilter();
       }
       if (mediaType === 'audio') {
         const muteIcon = document.getElementById(`muted-${uid}`);
@@ -1360,6 +1913,7 @@
         document.getElementById('camBtn').textContent = '📷';
         if (avatar) avatar.style.display = 'none';
       }
+      applyTileVisibilityFilter();
     }
 
     async function toggleScreenShare() {
@@ -1677,6 +2231,16 @@
             const nameSpan = document.querySelector(`#video-card-${m.uid} .video-card-name span`);
             if (nameSpan) {
               nameSpan.textContent = `${m.name} ${m.uid === myUid ? '(You)' : ''}`;
+            }
+          }
+
+          // Move teacher card to main presenter area if it's currently in sidebar / spotlight
+          if (m.role === 'publisher' && (currentLayoutPreset === 'sidebar' || currentLayoutPreset === 'spotlight')) {
+            const card = document.getElementById(`video-card-${m.uid}`);
+            const mainArea = document.getElementById('main-presenter-area');
+            if (card && card.parentElement !== mainArea) {
+              mainArea.appendChild(card);
+              adjustGridColumns();
             }
           }
 
