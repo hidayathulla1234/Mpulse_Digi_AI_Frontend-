@@ -461,6 +461,7 @@
       <div class="controls-bar">
         <button class="control-btn" id="micBtn" onclick="toggleMic()" title="Toggle Mic" style="display:none;">🎙️</button>
         <button class="control-btn" id="camBtn" onclick="toggleCam()" title="Toggle Camera" style="display:none;">📷</button>
+        <button class="control-btn" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen" style="display:none;">🖥️</button>
         <button class="control-btn leave-btn" onclick="leaveChannel()">Leave Classroom</button>
       </div>
     </div>
@@ -510,6 +511,8 @@
     let remoteUsers = {};
     let isMuted = false;
     let isCamOff = false;
+    let isScreenSharing = false;
+    let screenTrack = null;
 
     // Roster / Participant management
     const participantList = [];
@@ -639,6 +642,7 @@
           client.setClientRole('host');
           document.getElementById('micBtn').style.display = 'flex';
           document.getElementById('camBtn').style.display = 'flex';
+          document.getElementById('screenBtn').style.display = 'flex';
           document.getElementById('placeholderTitle').textContent = 'Starting camera & microphone...';
         } else {
           // Student mode
@@ -742,8 +746,105 @@
       }
     }
 
+    // Toggle Screen Sharing (Teacher control)
+    async function toggleScreenShare() {
+      if (role !== 'publisher' || !client) return;
+      const screenBtn = document.getElementById('screenBtn');
+      
+      try {
+        if (!isScreenSharing) {
+          console.log('Starting screen sharing...');
+          
+          // 1. Create screen sharing video track
+          screenTrack = await AgoraRTC.createScreenVideoTrack({
+            encoderConfig: "1080p_1"
+          });
+          
+          // 2. Handle the event when user clicks 'Stop Sharing' from browser UI bar
+          screenTrack.on("track-ended", () => {
+            console.log("Screen sharing track ended by browser UI");
+            stopScreenShare();
+          });
+
+          // 3. Unpublish camera video and publish screen video
+          if (localTracks.videoTrack) {
+            await client.unpublish(localTracks.videoTrack);
+            localTracks.videoTrack.stop();
+          }
+          
+          await client.publish(screenTrack);
+          
+          // 4. Play screen track locally
+          document.getElementById('videoPlaceholder').style.display = 'none';
+          screenTrack.play('video-container');
+          
+          isScreenSharing = true;
+          screenBtn.classList.add('active');
+          screenBtn.textContent = '⏹️';
+          screenBtn.title = 'Stop Sharing';
+          
+          // Disable cam button styling during screen share
+          document.getElementById('camBtn').disabled = true;
+          document.getElementById('camBtn').style.opacity = 0.5;
+          
+        } else {
+          await stopScreenShare();
+        }
+      } catch (err) {
+        console.error("Screen share error:", err);
+        alert("Failed to start screen share: " + err.message);
+      }
+    }
+
+    async function stopScreenShare() {
+      if (!isScreenSharing) return;
+      const screenBtn = document.getElementById('screenBtn');
+      
+      try {
+        // 1. Unpublish screen sharing track
+        if (screenTrack) {
+          await client.unpublish(screenTrack);
+          screenTrack.stop();
+          screenTrack.close();
+          screenTrack = null;
+        }
+        
+        // 2. Re-create and publish camera track if camera is not explicitly turned off
+        if (!isCamOff) {
+          localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({
+            encoderConfig: '720p_1'
+          });
+          document.getElementById('videoPlaceholder').style.display = 'none';
+          localTracks.videoTrack.play('video-container');
+          await client.publish(localTracks.videoTrack);
+        } else {
+          document.getElementById('videoPlaceholder').style.display = 'flex';
+          document.getElementById('placeholderTitle').textContent = 'Video Feed Stopped';
+        }
+        
+        isScreenSharing = false;
+        screenBtn.classList.remove('active');
+        screenBtn.textContent = '🖥️';
+        screenBtn.title = 'Share Screen';
+        
+        // Enable cam button back
+        document.getElementById('camBtn').disabled = false;
+        document.getElementById('camBtn').style.opacity = 1;
+        
+      } catch (err) {
+        console.error("Stop screen share error:", err);
+      }
+    }
+
     // Leave the channel cleanly
     async function leaveChannel() {
+      // Stop screen share track if sharing
+      if (screenTrack) {
+        screenTrack.stop();
+        screenTrack.close();
+        screenTrack = null;
+      }
+
       // Stop local tracks
       for (let trackName in localTracks) {
         var track = localTracks[trackName];
