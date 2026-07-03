@@ -993,16 +993,12 @@
       const localUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
       
       if (role !== 'publisher') {
-        // Students MUST be logged in
-        if (!localUser.name) {
-          alert('Please log in to your account first to access the classroom.');
-          window.location.href = 'student.html';
-          return;
+        if (localUser.name) {
+          displayName = localUser.name;
+          document.getElementById('lobbyNameInput').value = displayName;
+          document.getElementById('lobbyNameInput').disabled = true;
+          document.getElementById('lobbyNameInput').style.opacity = '0.7';
         }
-        displayName = localUser.name;
-        document.getElementById('lobbyNameInput').value = displayName;
-        document.getElementById('lobbyNameInput').disabled = true;
-        document.getElementById('lobbyNameInput').style.opacity = '0.7';
         
         // Hide participants button & roster panel for students
         document.getElementById('rosterToggleBtn').style.display = 'none';
