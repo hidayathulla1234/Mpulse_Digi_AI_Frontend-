@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Class — MPULSE DIGITAL AI</title>
+  <title>Interactive Live Class — MPULSE DIGITAL AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
   <style>
@@ -18,6 +18,7 @@
       --text: #f4f4f5;
       --muted: #a1a1aa;
       --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.15);
       --success: #10b981;
       --danger: #ef4444;
       --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
@@ -67,10 +68,10 @@
       text-transform: uppercase;
       padding: 4px 10px;
       border-radius: 4px;
-      animation: pulse 1.8s infinite;
+      animation: pulseBadge 1.8s infinite;
     }
 
-    @keyframes pulse {
+    @keyframes pulseBadge {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.6; }
     }
@@ -91,10 +92,165 @@
       color: var(--violet);
     }
 
-    /* MAIN CONTAINER */
+    /* LOBBY / PRE-JOIN GREEN ROOM */
+    .lobby-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .lobby-container {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 50px;
+      align-items: center;
+    }
+
+    .lobby-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .lobby-preview {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #121214;
+      border-radius: 20px;
+      border: 1px solid var(--border-strong);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+    }
+
+    .lobby-preview-player {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: scaleX(-1);
+    }
+
+    .lobby-preview-controls {
+      position: absolute;
+      bottom: 20px;
+      display: flex;
+      gap: 14px;
+      z-index: 5;
+    }
+
+    .lobby-preview-avatar {
+      font-size: 64px;
+      z-index: 1;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lobby-right {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .lobby-right h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .lobby-right h2 span {
+      background: linear-gradient(135deg, var(--violet-light), var(--cyan-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lobby-right p {
+      color: var(--muted);
+      font-size: 14.5px;
+      line-height: 1.6;
+    }
+
+    .lobby-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .lobby-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .lobby-input-group label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .lobby-input {
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .lobby-input:focus {
+      border-color: var(--violet);
+    }
+
+    .lobby-join-btn {
+      padding: 16px;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      border: none;
+      color: #fff;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(109, 40, 217, 0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .lobby-join-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(109, 40, 217, 0.45);
+    }
+
+    /* CLASSROOM LAYOUT */
     .classroom-container {
       flex: 1;
-      display: flex;
+      display: none; /* Shown after joining */
       position: relative;
       height: calc(100vh - 70px);
     }
@@ -111,22 +267,37 @@
       padding: 20px;
     }
 
-    .video-wrapper {
+    /* VIDEO GRID */
+    #video-grid {
       width: 100%;
       height: 100%;
       max-width: 1100px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: #09090b;
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      overflow-y: auto;
+      align-content: center;
       justify-content: center;
+      padding: 10px;
     }
 
-    #video-container {
+    .video-card {
+      position: relative;
+      background: #121214;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      box-shadow: var(--shadow);
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    .video-card.active-speaker {
+      border-color: var(--cyan);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+    }
+
+    .video-card-player {
       width: 100%;
       height: 100%;
       position: absolute;
@@ -134,79 +305,102 @@
       left: 0;
     }
 
-    .video-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      z-index: 2;
-      text-align: center;
-      padding: 24px;
+    .video-card-player video {
+      object-fit: cover !important;
     }
 
-    .placeholder-icon {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: rgba(139, 92, 246, 0.1);
-      border: 1px dashed var(--violet);
+    .video-card-name {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .video-card-avatar {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
-      color: var(--violet);
-      animation: bounce 3s ease-in-out infinite;
+      z-index: 1;
+      background: #141416;
     }
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
+    .video-card-avatar-inner {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(109, 40, 217, 0.3);
     }
 
-    .placeholder-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text);
+    .video-card-muted-icon {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(239, 68, 68, 0.9);
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      z-index: 5;
+      box-shadow: 0 2px 12px rgba(239, 68, 68, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .placeholder-desc {
-      font-size: 14px;
-      color: var(--muted);
-      max-width: 320px;
-    }
-
-    /* CONTROLS */
+    /* CONTROLS BAR */
     .controls-bar {
       position: absolute;
       bottom: 40px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(24, 24, 27, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-strong);
       border-radius: 100px;
-      padding: 10px 24px;
+      padding: 10px 28px;
       display: flex;
       gap: 14px;
       align-items: center;
       box-shadow: var(--shadow);
-      z-index: 5;
+      z-index: 100;
     }
 
     .control-btn {
-      width: 46px;
-      height: 46px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: var(--surface-card);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-strong);
       color: var(--text);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 19px;
       transition: all 0.2s ease;
+      outline: none;
     }
 
     .control-btn:hover {
@@ -215,7 +409,7 @@
     }
 
     .control-btn.active {
-      background: rgba(139, 92, 246, 0.2);
+      background: rgba(139, 92, 246, 0.25);
       border-color: var(--violet);
       color: var(--violet-light);
     }
@@ -231,10 +425,10 @@
       color: #fff;
       border: none;
       width: auto;
-      padding: 0 20px;
+      padding: 0 24px;
       border-radius: 100px;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 13.5px;
     }
 
     .control-btn.leave-btn:hover {
@@ -438,30 +632,53 @@
   <header>
     <div class="class-info">
       <div class="live-badge" id="liveBadge">LIVE</div>
-      <div class="class-title" id="classTitle">Mpulse Live Video Classroom</div>
+      <div class="class-title" id="classTitle">Classroom: Connection Pending</div>
     </div>
     <div class="logo-text">MPULSE<span>.AI</span></div>
   </header>
 
+  <!-- LOBBY SCREEN -->
+  <div class="lobby-screen" id="lobbyScreen">
+    <div class="lobby-container">
+      <div class="lobby-left">
+        <div class="lobby-preview">
+          <div class="lobby-preview-player" id="lobbyPreviewPlayer"></div>
+          <div class="lobby-preview-avatar" id="lobbyPreviewAvatar">🙋‍♂️</div>
+          <div class="lobby-preview-controls">
+            <button class="control-btn" id="lobbyMicBtn" onclick="toggleLobbyMic()">🎙️</button>
+            <button class="control-btn" id="lobbyCamBtn" onclick="toggleLobbyCam()">📷</button>
+          </div>
+        </div>
+      </div>
+      <div class="lobby-right">
+        <h2>Ready to join your <span>Interactive Classroom</span>?</h2>
+        <p>Confirm your video and audio settings before joining the live session. Make sure your camera and microphone permissions are enabled.</p>
+        
+        <div class="lobby-form">
+          <div class="lobby-input-group">
+            <label for="lobbyNameInput">Your Display Name</label>
+            <input type="text" class="lobby-input" id="lobbyNameInput" placeholder="Enter your full name...">
+          </div>
+          <button class="lobby-join-btn" onclick="requestToJoinClassroom()">
+            Join Meeting 🚀
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- CLASSROOM CONTAINER -->
-  <div class="classroom-container">
+  <div class="classroom-container" id="classroomContainer">
 
     <!-- VIDEO ZONE -->
     <div class="video-zone">
-      <div class="video-wrapper">
-        <div id="video-container"></div>
-        <div class="video-placeholder" id="videoPlaceholder">
-          <div class="placeholder-icon">🎥</div>
-          <div class="placeholder-title" id="placeholderTitle">Waiting for class to start...</div>
-          <div class="placeholder-desc" id="placeholderDesc">The teacher has not started the broadcast yet. Please hold on, you'll be connected automatically.</div>
-        </div>
-      </div>
+      <div id="video-grid"></div>
 
       <!-- CONTROLS BAR -->
       <div class="controls-bar">
-        <button class="control-btn" id="micBtn" onclick="toggleMic()" title="Toggle Mic" style="display:none;">🎙️</button>
-        <button class="control-btn" id="camBtn" onclick="toggleCam()" title="Toggle Camera" style="display:none;">📷</button>
-        <button class="control-btn" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen" style="display:none;">🖥️</button>
+        <button class="control-btn" id="micBtn" onclick="toggleMic()" title="Toggle Mic">🎙️</button>
+        <button class="control-btn" id="camBtn" onclick="toggleCam()" title="Toggle Camera">📷</button>
+        <button class="control-btn" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen">🖥️</button>
         <button class="control-btn leave-btn" onclick="leaveChannel()">Leave Classroom</button>
       </div>
     </div>
@@ -470,7 +687,7 @@
     <div class="side-panel">
       <div class="panel-tabs">
         <button class="panel-tab active" id="tabChat" onclick="switchPanel('chat')">Live Chat</button>
-        <button class="panel-tab" id="tabRoster" onclick="switchPanel('roster')">Students</button>
+        <button class="panel-tab" id="tabRoster" onclick="switchPanel('roster')">Students (0)</button>
       </div>
 
       <!-- CHAT CONTAINER -->
@@ -501,21 +718,31 @@
     const params = new URLSearchParams(window.location.search);
     const channelName = params.get('channel') || 'mpulse-live';
     const role = params.get('role') || 'subscriber'; // 'publisher' (teacher) or 'subscriber' (student)
-    const userName = params.get('name') || (role === 'publisher' ? 'Teacher' : 'Student_' + Math.floor(100+Math.random()*900));
-
+    
     document.getElementById('classTitle').textContent = `Classroom: ${channelName.toUpperCase()}`;
 
     // App State Variables
     let client = null;
     let localTracks = { videoTrack: null, audioTrack: null };
+    let lobbyTracks = { videoTrack: null, audioTrack: null };
     let remoteUsers = {};
+    
+    // User name state
+    let displayName = params.get('name') || '';
+    let myUid = Math.floor(100000 + Math.random() * 900000);
+    
+    // Lobby Preview States
+    let lobbyMicActive = true;
+    let lobbyCamActive = true;
+    
+    // Classroom States
     let isMuted = false;
     let isCamOff = false;
     let isScreenSharing = false;
     let screenTrack = null;
-
-    // Roster / Participant management
-    const participantList = [];
+    
+    // Roster / Participant name cache (UID => Name)
+    let participantNameMap = {};
 
     // Switch Panel (Chat vs Roster)
     function switchPanel(panel) {
@@ -525,42 +752,99 @@
       document.getElementById('panelRosterContent').style.display = panel === 'roster' ? 'flex' : 'none';
     }
 
-    // Add participants dynamically
-    function updateRoster() {
-      const container = document.getElementById('panelRosterContent');
-      container.innerHTML = '';
-      
-      // Always add teacher first (active or waiting)
-      const teacherOnline = role === 'publisher' || Object.values(remoteUsers).some(u => u.hasVideo || u.hasAudio);
-      container.innerHTML += `
-        <div class="roster-item">
-          <div class="roster-left">
-            <div class="avatar" style="background:var(--cyan)">T</div>
-            <span class="roster-name">Class Teacher</span>
-          </div>
-          <span class="roster-role teacher">${teacherOnline ? 'Online' : 'Offline'}</span>
-        </div>
-      `;
+    // Set up Lobby screen
+    async function initLobby() {
+      if (displayName) {
+        document.getElementById('lobbyNameInput').value = displayName;
+      } else {
+        const localUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (localUser.name) {
+          displayName = localUser.name;
+          document.getElementById('lobbyNameInput').value = displayName;
+        }
+      }
 
-      participantList.forEach(p => {
-        const initial = p.name.charAt(0).toUpperCase();
-        container.innerHTML += `
-          <div class="roster-item">
-            <div class="roster-left">
-              <div class="avatar">${initial}</div>
-              <span class="roster-name">${p.name} ${p.isMe ? '(You)' : ''}</span>
-            </div>
-            <span class="roster-role">Student</span>
-          </div>
-        `;
-      });
-      document.getElementById('tabRoster').textContent = `Students (${participantList.length})`;
+      if (typeof AgoraRTC === 'undefined') {
+        alert('Agora SDK failed to load. Check your internet connection.');
+        return;
+      }
+
+      try {
+        lobbyTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        lobbyTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: '720p_1' });
+        
+        document.getElementById('lobbyPreviewAvatar').style.display = 'none';
+        lobbyTracks.videoTrack.play('lobbyPreviewPlayer');
+      } catch (err) {
+        console.warn('Lobby camera preview error:', err);
+        document.getElementById('lobbyPreviewAvatar').style.display = 'flex';
+        lobbyCamActive = false;
+        document.getElementById('lobbyCamBtn').classList.add('disabled');
+        document.getElementById('lobbyCamBtn').textContent = '🚫';
+      }
     }
 
-    // Chat Message Management
+    // Toggle Preview Microphone
+    async function toggleLobbyMic() {
+      if (!lobbyTracks.audioTrack) return;
+      if (lobbyMicActive) {
+        await lobbyTracks.audioTrack.setEnabled(false);
+        lobbyMicActive = false;
+        document.getElementById('lobbyMicBtn').classList.add('disabled');
+        document.getElementById('lobbyMicBtn').textContent = '🔇';
+      } else {
+        await lobbyTracks.audioTrack.setEnabled(true);
+        lobbyMicActive = true;
+        document.getElementById('lobbyMicBtn').classList.remove('disabled');
+        document.getElementById('lobbyMicBtn').textContent = '🎙️';
+      }
+    }
+
+    // Toggle Preview Camera
+    async function toggleLobbyCam() {
+      if (!lobbyTracks.videoTrack) return;
+      if (lobbyCamActive) {
+        await lobbyTracks.videoTrack.setEnabled(false);
+        lobbyCamActive = false;
+        document.getElementById('lobbyCamBtn').classList.add('disabled');
+        document.getElementById('lobbyCamBtn').textContent = '🚫';
+        document.getElementById('lobbyPreviewAvatar').style.display = 'flex';
+      } else {
+        await lobbyTracks.videoTrack.setEnabled(true);
+        lobbyCamActive = true;
+        document.getElementById('lobbyCamBtn').classList.remove('disabled');
+        document.getElementById('lobbyCamBtn').textContent = '📷';
+        document.getElementById('lobbyPreviewAvatar').style.display = 'none';
+      }
+    }
+
+    // Join Trigger
+    async function requestToJoinClassroom() {
+      const nameVal = document.getElementById('lobbyNameInput').value.trim();
+      if (!nameVal) {
+        alert('Please enter your display name to join.');
+        return;
+      }
+      displayName = nameVal;
+
+      if (lobbyTracks.videoTrack) {
+        lobbyTracks.videoTrack.stop();
+        lobbyTracks.videoTrack.close();
+      }
+      if (lobbyTracks.audioTrack) {
+        lobbyTracks.audioTrack.stop();
+        lobbyTracks.audioTrack.close();
+      }
+
+      document.getElementById('lobbyScreen').style.display = 'none';
+      document.getElementById('classroomContainer').style.display = 'flex';
+
+      await initClassroom();
+    }
+
+    // Classroom Chat setup
     const messages = [
-      { sender: 'System', text: 'Welcome to the live classroom chat! Keep questions relevant to the class topic.', system: true },
-      { sender: 'Class Teacher', text: 'Good day class! Today we will discuss AI Agent integration in web applications. Feel free to post questions here.', teacher: true }
+      { sender: 'System', text: 'Welcome to your interactive live classroom! Everyone can turn on their camera/microphone to present and speak.', system: true }
     ];
 
     function renderMessages() {
@@ -588,185 +872,204 @@
       if (!text) return;
       
       messages.push({
-        sender: userName,
+        sender: displayName,
         text: text,
         teacher: role === 'publisher'
       });
       
       renderMessages();
       input.value = '';
-
-      // Simulate a quick automated question from other students (only if student is posting)
-      if (role !== 'publisher' && Math.random() > 0.4) {
-        setTimeout(() => {
-          messages.push({
-            sender: 'Student_' + Math.floor(100+Math.random()*900),
-            text: 'I had the same question, looking forward to the explanation!'
-          });
-          renderMessages();
-        }, 1500);
-      }
     }
 
     // ─────────────────────────────────────────────────────────────
-    // AGORA RTC STREAMING CODE
+    // AGORA RTC MULTI-USER GRID INTEGRATION
     // ─────────────────────────────────────────────────────────────
     async function initClassroom() {
       renderMessages();
-      participantList.push({ name: userName, isMe: true });
-      updateRoster();
 
-      if (typeof AgoraRTC === 'undefined') {
-        alert('Could not load Agora SDK. Please check your internet connection.');
-        return;
-      }
-
-      // 1. Fetch token and App ID from our Node server
       try {
-        console.log(`Fetching token: role=${role}, channel=${channelName}`);
-        const tokenRes = await fetch(`${BACKEND_URL}/api/agora-token?channelName=${channelName}&role=${role}`);
+        const tokenRes = await fetch(`${BACKEND_URL}/api/agora-token?channelName=${channelName}&role=${role}&uid=${myUid}`);
         const tokenData = await tokenRes.json();
         
-        if (tokenData.error) {
-          throw new Error(tokenData.error);
-        }
-
+        if (tokenData.error) throw new Error(tokenData.error);
         const { token, appId } = tokenData;
-        console.log('Agora token successfully fetched!');
 
-        // 2. Initialize Agora client
-        client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' });
+        client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
         
-        if (role === 'publisher') {
-          // Teacher mode
-          client.setClientRole('host');
-          document.getElementById('micBtn').style.display = 'flex';
-          document.getElementById('camBtn').style.display = 'flex';
-          document.getElementById('screenBtn').style.display = 'flex';
-          document.getElementById('placeholderTitle').textContent = 'Starting camera & microphone...';
-        } else {
-          // Student mode
-          client.setClientRole('audience');
-          document.getElementById('placeholderTitle').textContent = 'Connecting to teacher stream...';
-        }
+        await fetch(`${BACKEND_URL}/api/classroom/register-name`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channelName, uid: myUid, name: displayName, role })
+        });
+        
+        participantNameMap[myUid] = { name: displayName, role };
 
-        // 3. Join the channel
-        const uid = await client.join(appId, channelName, token, null);
-        console.log('Joined channel successfully, UID:', uid);
+        pollRosterNames();
+        setInterval(pollRosterNames, 5000);
 
-        // 4. Handle client subscription events
+        await client.join(appId, channelName, token, myUid);
+        console.log('Joined Agora RTC Room successfully! UID:', myUid);
+
         client.on('user-published', handleUserPublished);
         client.on('user-unpublished', handleUserUnpublished);
 
-        // 5. If Publisher (Teacher), create tracks and publish
-        if (role === 'publisher') {
-          // Create local microphone and camera tracks
-          localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-          localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({
-            encoderConfig: '720p_1' // 720p resolution
-          });
+        localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: '720p_1' });
 
-          // Play local video preview
-          document.getElementById('videoPlaceholder').style.display = 'none';
-          localTracks.videoTrack.play('video-container');
+        createVideoCard(myUid, displayName, true);
+        localTracks.videoTrack.play(`video-player-${myUid}`);
 
-          // Publish tracks to the channel
-          await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
-          console.log('Teacher stream published successfully!');
-          document.getElementById('liveBadge').textContent = 'BROADCASTING';
+        if (!lobbyMicActive) {
+          await localTracks.audioTrack.setEnabled(false);
+          isMuted = true;
+          document.getElementById('micBtn').classList.add('disabled');
+          document.getElementById('micBtn').textContent = '🔇';
+          document.getElementById(`muted-${myUid}`).style.display = 'flex';
         }
+        if (!lobbyCamActive) {
+          await localTracks.videoTrack.setEnabled(false);
+          isCamOff = true;
+          document.getElementById('camBtn').classList.add('disabled');
+          document.getElementById('camBtn').textContent = '🚫';
+          document.getElementById(`avatar-${myUid}`).style.display = 'flex';
+        }
+
+        await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+        console.log('Local tracks published!');
 
       } catch (err) {
         console.error('Failed to initialize classroom:', err);
-        document.getElementById('placeholderTitle').textContent = 'Classroom connection failed';
-        document.getElementById('placeholderDesc').textContent = err.message || 'Check your internet connection or server configurations.';
+        alert('Failed to connect to Agora classroom: ' + err.message);
       }
     }
 
-    // Handle publishing of remote user (when teacher turns stream on)
+    function createVideoCard(uid, name, isMe = false) {
+      const grid = document.getElementById('video-grid');
+      if (document.getElementById(`video-card-${uid}`)) return;
+
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      card.id = `video-card-${uid}`;
+
+      const initial = name ? name.charAt(0).toUpperCase() : '?';
+
+      card.innerHTML = `
+        <div class="video-card-player" id="video-player-${uid}"></div>
+        <div class="video-card-avatar" id="avatar-${uid}" style="display: none;">
+          <div class="video-card-avatar-inner">${initial}</div>
+        </div>
+        <div class="video-card-muted-icon" id="muted-${uid}" style="display: none;">🔇</div>
+        <div class="video-card-name">
+          <span>${name} ${isMe ? '(You)' : ''}</span>
+        </div>
+      `;
+
+      grid.appendChild(card);
+      adjustGridColumns();
+    }
+
+    function removeVideoCard(uid) {
+      const card = document.getElementById(`video-card-${uid}`);
+      if (card) {
+        card.remove();
+      }
+      adjustGridColumns();
+    }
+
+    function adjustGridColumns() {
+      const grid = document.getElementById('video-grid');
+      const cards = grid.children.length;
+      if (cards === 0) return;
+
+      let cols = 1;
+      if (cards >= 2 && cards <= 4) cols = 2;
+      else if (cards > 4) cols = 3;
+      
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    }
+
     async function handleUserPublished(user, mediaType) {
-      const id = user.uid;
-      remoteUsers[id] = user;
+      const uid = user.uid;
       await client.subscribe(user, mediaType);
-      console.log('Subscribed to remote user:', id, 'mediaType:', mediaType);
+      
+      const pInfo = participantNameMap[uid] || { name: `User ${uid}`, role: 'student' };
 
       if (mediaType === 'video') {
-        document.getElementById('videoPlaceholder').style.display = 'none';
-        user.videoTrack.play('video-container');
-        updateRoster();
+        createVideoCard(uid, pInfo.name);
+        document.getElementById(`avatar-${uid}`).style.display = 'none';
+        user.videoTrack.play(`video-player-${uid}`);
       }
+
       if (mediaType === 'audio') {
         user.audioTrack.play();
+        createVideoCard(uid, pInfo.name);
+        document.getElementById(`muted-${uid}`).style.display = 'none';
       }
     }
 
-    // Handle unpublishing of remote user (when teacher leaves/stops stream)
     function handleUserUnpublished(user, mediaType) {
+      const uid = user.uid;
       if (mediaType === 'video') {
-        document.getElementById('videoPlaceholder').style.display = 'flex';
-        document.getElementById('placeholderTitle').textContent = 'Class has ended';
-        document.getElementById('placeholderDesc').textContent = 'The teacher has stopped broadcasting. You may now leave the classroom.';
-        updateRoster();
+        const avatar = document.getElementById(`avatar-${uid}`);
+        if (avatar) avatar.style.display = 'flex';
+      }
+      if (mediaType === 'audio') {
+        const muteIcon = document.getElementById(`muted-${uid}`);
+        if (muteIcon) muteIcon.style.display = 'flex';
       }
     }
 
-    // Toggle Mic (Teacher control)
     async function toggleMic() {
       if (!localTracks.audioTrack) return;
+      const mutedIcon = document.getElementById(`muted-${myUid}`);
+      
       if (!isMuted) {
         await localTracks.audioTrack.setEnabled(false);
         isMuted = true;
         document.getElementById('micBtn').classList.add('disabled');
         document.getElementById('micBtn').textContent = '🔇';
+        if (mutedIcon) mutedIcon.style.display = 'flex';
       } else {
         await localTracks.audioTrack.setEnabled(true);
         isMuted = false;
         document.getElementById('micBtn').classList.remove('disabled');
         document.getElementById('micBtn').textContent = '🎙️';
+        if (mutedIcon) mutedIcon.style.display = 'none';
       }
     }
 
-    // Toggle Camera (Teacher control)
     async function toggleCam() {
       if (!localTracks.videoTrack) return;
+      const avatar = document.getElementById(`avatar-${myUid}`);
+      
       if (!isCamOff) {
         await localTracks.videoTrack.setEnabled(false);
         isCamOff = true;
         document.getElementById('camBtn').classList.add('disabled');
         document.getElementById('camBtn').textContent = '🚫';
-        document.getElementById('videoPlaceholder').style.display = 'flex';
-        document.getElementById('placeholderTitle').textContent = 'Video Feed Stopped';
-        document.getElementById('placeholderDesc').textContent = 'You have turned off your camera feed. Students can only hear your audio.';
+        if (avatar) avatar.style.display = 'flex';
       } else {
         await localTracks.videoTrack.setEnabled(true);
         isCamOff = false;
         document.getElementById('camBtn').classList.remove('disabled');
         document.getElementById('camBtn').textContent = '📷';
-        document.getElementById('videoPlaceholder').style.display = 'none';
+        if (avatar) avatar.style.display = 'none';
       }
     }
 
-    // Toggle Screen Sharing (Teacher control)
     async function toggleScreenShare() {
-      if (role !== 'publisher' || !client) return;
+      if (!client) return;
       const screenBtn = document.getElementById('screenBtn');
       
       try {
         if (!isScreenSharing) {
-          console.log('Starting screen sharing...');
+          console.log('Activating screen sharing...');
           
-          // 1. Create screen sharing video track
-          screenTrack = await AgoraRTC.createScreenVideoTrack({
-            encoderConfig: "1080p_1"
-          });
-          
-          // 2. Handle the event when user clicks 'Stop Sharing' from browser UI bar
+          screenTrack = await AgoraRTC.createScreenVideoTrack({ encoderConfig: "1080p_1" });
           screenTrack.on("track-ended", () => {
-            console.log("Screen sharing track ended by browser UI");
             stopScreenShare();
           });
 
-          // 3. Unpublish camera video and publish screen video
           if (localTracks.videoTrack) {
             await client.unpublish(localTracks.videoTrack);
             localTracks.videoTrack.stop();
@@ -774,19 +1077,16 @@
           
           await client.publish(screenTrack);
           
-          // 4. Play screen track locally
-          document.getElementById('videoPlaceholder').style.display = 'none';
-          screenTrack.play('video-container');
+          document.getElementById(`avatar-${myUid}`).style.display = 'none';
+          screenTrack.play(`video-player-${myUid}`);
           
           isScreenSharing = true;
           screenBtn.classList.add('active');
           screenBtn.textContent = '⏹️';
-          screenBtn.title = 'Stop Sharing';
+          screenBtn.title = 'Stop Screen Share';
           
-          // Disable cam button styling during screen share
           document.getElementById('camBtn').disabled = true;
           document.getElementById('camBtn').style.opacity = 0.5;
-          
         } else {
           await stopScreenShare();
         }
@@ -801,7 +1101,6 @@
       const screenBtn = document.getElementById('screenBtn');
       
       try {
-        // 1. Unpublish screen sharing track
         if (screenTrack) {
           await client.unpublish(screenTrack);
           screenTrack.stop();
@@ -809,17 +1108,13 @@
           screenTrack = null;
         }
         
-        // 2. Re-create and publish camera track if camera is not explicitly turned off
         if (!isCamOff) {
-          localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({
-            encoderConfig: '720p_1'
-          });
-          document.getElementById('videoPlaceholder').style.display = 'none';
-          localTracks.videoTrack.play('video-container');
+          localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: '720p_1' });
+          document.getElementById(`avatar-${myUid}`).style.display = 'none';
+          localTracks.videoTrack.play(`video-player-${myUid}`);
           await client.publish(localTracks.videoTrack);
         } else {
-          document.getElementById('videoPlaceholder').style.display = 'flex';
-          document.getElementById('placeholderTitle').textContent = 'Video Feed Stopped';
+          document.getElementById(`avatar-${myUid}`).style.display = 'flex';
         }
         
         isScreenSharing = false;
@@ -827,25 +1122,18 @@
         screenBtn.textContent = '🖥️';
         screenBtn.title = 'Share Screen';
         
-        // Enable cam button back
         document.getElementById('camBtn').disabled = false;
         document.getElementById('camBtn').style.opacity = 1;
-        
       } catch (err) {
         console.error("Stop screen share error:", err);
       }
     }
 
-    // Leave the channel cleanly
     async function leaveChannel() {
-      // Stop screen share track if sharing
       if (screenTrack) {
         screenTrack.stop();
         screenTrack.close();
-        screenTrack = null;
       }
-
-      // Stop local tracks
       for (let trackName in localTracks) {
         var track = localTracks[trackName];
         if (track) {
@@ -854,24 +1142,58 @@
           localTracks[trackName] = null;
         }
       }
-
-      // Leave the channel
       if (client) {
         await client.leave();
       }
-      
-      console.log('User left the classroom.');
-      
-      // Redirect back to dashboard/home page
-      if (role === 'publisher') {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.href = 'index.html';
+      window.location.href = role === 'publisher' ? 'admin.html' : 'student.html';
+    }
+
+    async function pollRosterNames() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/classroom/names?channelName=${channelName}`);
+        const data = await res.json();
+        
+        if (!data.mappings) return;
+        
+        const rosterContainer = document.getElementById('panelRosterContent');
+        rosterContainer.innerHTML = '';
+        
+        let activeStudents = 0;
+
+        data.mappings.forEach(m => {
+          participantNameMap[m.uid] = { name: m.name, role: m.role };
+          
+          const nameSpan = document.querySelector(`#video-card-${m.uid} .video-card-name span`);
+          if (nameSpan) {
+            nameSpan.textContent = `${m.name} ${m.uid === myUid ? '(You)' : ''}`;
+          }
+
+          const isTeacher = m.role === 'publisher';
+          if (!isTeacher) activeStudents++;
+
+          const roleClass = isTeacher ? 'teacher' : '';
+          const roleLabel = isTeacher ? 'Teacher' : 'Student';
+          const avatarLetter = m.name.charAt(0).toUpperCase();
+
+          rosterContainer.innerHTML += `
+            <div class="roster-item">
+              <div class="roster-left">
+                <div class="avatar" style="${isTeacher ? 'background:var(--cyan)' : ''}">${avatarLetter}</div>
+                <span class="roster-name">${m.name} ${m.uid === myUid ? '(You)' : ''}</span>
+              </div>
+              <span class="roster-role ${roleClass}">${roleLabel}</span>
+            </div>
+          `;
+        });
+
+        document.getElementById('tabRoster').textContent = `Students (${activeStudents})`;
+
+      } catch (err) {
+        console.warn('Roster poll error:', err.message);
       }
     }
 
-    // Start classroom automatically on page load
-    window.onload = initClassroom;
+    window.onload = initLobby;
   </script>
 </body>
 </html>
