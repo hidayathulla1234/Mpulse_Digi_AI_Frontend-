@@ -797,6 +797,7 @@
         <button class="control-btn" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen">🖥️</button>
         <button class="control-btn" id="handBtn" onclick="toggleRaiseHand()" title="Raise Hand">✋</button>
         <button class="control-btn" id="moreBtn" onclick="toggleMoreMenu()" title="More Options">⋮</button>
+        <button class="control-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
         <button class="control-btn leave-btn" id="leaveBtn" onclick="leaveChannel()" title="End Call">☎️</button>
         
         <!-- Toggle Chat/Roster buttons in Google Meet Toolbar -->
@@ -901,6 +902,11 @@
     let currentPanelTab = '';
 
     function toggleSidePanel(tab) {
+      if (role !== 'publisher' && tab === 'roster') {
+        // Students should not view the participants list
+        return;
+      }
+      
       const panel = document.querySelector('.side-panel');
       const chatToggle = document.getElementById('chatToggleBtn');
       const rosterToggle = document.getElementById('rosterToggleBtn');
@@ -918,10 +924,14 @@
       }
       
       chatToggle.classList.toggle('active', sidePanelOpen && currentPanelTab === 'chat');
-      rosterToggle.classList.toggle('active', sidePanelOpen && currentPanelTab === 'roster');
+      if (role === 'publisher') {
+        rosterToggle.classList.toggle('active', sidePanelOpen && currentPanelTab === 'roster');
+      }
     }
 
     function switchPanel(panel) {
+      if (role !== 'publisher' && panel === 'roster') return;
+      
       currentPanelTab = panel;
       document.getElementById('tabChat').classList.toggle('active', panel === 'chat');
       document.getElementById('tabRoster').classList.toggle('active', panel === 'roster');
@@ -929,16 +939,35 @@
       document.getElementById('panelRosterContent').style.display = panel === 'roster' ? 'flex' : 'none';
       
       document.getElementById('chatToggleBtn').classList.toggle('active', sidePanelOpen && currentPanelTab === 'chat');
-      document.getElementById('rosterToggleBtn').classList.toggle('active', sidePanelOpen && currentPanelTab === 'roster');
+      if (role === 'publisher') {
+        document.getElementById('rosterToggleBtn').classList.toggle('active', sidePanelOpen && currentPanelTab === 'roster');
+      }
     }
 
     // Set up Lobby screen
     async function initLobby() {
-      if (displayName) {
+      // Name validation: Lock display name to student's registered name
+      const localUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      
+      if (role !== 'publisher') {
+        // Students MUST be logged in
+        if (!localUser.name) {
+          alert('Please log in to your account first to access the classroom.');
+          window.location.href = 'student.html';
+          return;
+        }
+        displayName = localUser.name;
         document.getElementById('lobbyNameInput').value = displayName;
+        document.getElementById('lobbyNameInput').disabled = true;
+        document.getElementById('lobbyNameInput').style.opacity = '0.7';
+        
+        // Hide participants button for students
+        document.getElementById('rosterToggleBtn').style.display = 'none';
+        document.getElementById('tabRoster').style.display = 'none';
       } else {
-        const localUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        if (localUser.name) {
+        if (displayName) {
+          document.getElementById('lobbyNameInput').value = displayName;
+        } else if (localUser.name) {
           displayName = localUser.name;
           document.getElementById('lobbyNameInput').value = displayName;
         }
@@ -1031,6 +1060,11 @@
       const container = document.getElementById('chatMessages');
       container.innerHTML = '';
       messages.forEach(m => {
+        // Filter out teacher chat messages from student UI
+        if (role !== 'publisher' && m.teacher) {
+          return;
+        }
+        
         const item = document.createElement('div');
         item.className = 'message-item';
         
@@ -1059,6 +1093,29 @@
       
       renderMessages();
       input.value = '';
+    }
+
+    // Full Screen Toggle API
+    function toggleFullscreen() {
+      const fsBtn = document.getElementById('fullscreenBtn');
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Android WebView fallback */
+          elem.webkitRequestFullscreen();
+        }
+        fsBtn.classList.add('active');
+        fsBtn.title = "Exit Fullscreen";
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+        fsBtn.classList.remove('active');
+        fsBtn.title = "Fullscreen";
+      }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -1133,6 +1190,9 @@
 
       const initial = name ? name.charAt(0).toUpperCase() : '?';
 
+      // Lock: Only show participant names if the user is the teacher
+      const showNamesOverlay = (role === 'publisher');
+
       card.innerHTML = `
         <div class="video-card-player" id="video-player-${uid}"></div>
         <div class="video-card-avatar" id="avatar-${uid}" style="display: none;">
@@ -1140,7 +1200,7 @@
         </div>
         <div class="video-card-muted-icon" id="muted-${uid}" style="display: none;">🔇</div>
         <div class="video-card-hand-raised" id="hand-raised-${uid}" style="display: none;">✋</div>
-        <div class="video-card-name">
+        <div class="video-card-name" style="${showNamesOverlay ? '' : 'display:none;'}">
           <span>${name} ${isMe ? '(You)' : ''}</span>
         </div>
       `;
@@ -1340,6 +1400,27 @@
       menu.style.display = isHidden ? 'flex' : 'none';
     }
 
+    // Update Toolbar Buttons visibility during recording
+    function updateToolbarRecordingState(active) {
+      const displayStyle = active ? 'none' : 'flex';
+      
+      document.getElementById('handBtn').style.display = displayStyle;
+      document.getElementById('moreBtn').style.display = displayStyle;
+      document.getElementById('chatToggleBtn').style.display = displayStyle;
+      
+      if (role === 'publisher') {
+        document.getElementById('rosterToggleBtn').style.display = displayStyle;
+      } else {
+        document.getElementById('rosterToggleBtn').style.display = 'none';
+      }
+      
+      // Auto close side panel when recording starts
+      if (active) {
+        document.querySelector('.side-panel').style.display = 'none';
+        sidePanelOpen = false;
+      }
+    }
+
     // Local screen recording trigger (Google Meet style)
     async function triggerLocalRecord() {
       toggleMoreMenu(); // Hide menu
@@ -1403,6 +1484,11 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
+            // Re-show buttons
+            isRecording = false;
+            recordLabel.textContent = '📹 Record Meeting';
+            updateToolbarRecordingState(false);
+            
             alert("Recording saved to your Downloads folder! You can upload this recording file inside your Student Portal Admin dashboard.");
           };
           
@@ -1410,14 +1496,15 @@
           isRecording = true;
           recordLabel.textContent = '⏹️ Stop Recording';
           
+          // Hide controls during recording
+          updateToolbarRecordingState(true);
+          
         } catch (err) {
           console.error("Recording start error:", err);
           alert("Failed to start recording. Please make sure to share your screen/tab to enable screen recording.");
         }
       } else {
         mediaRecorder.stop();
-        isRecording = false;
-        recordLabel.textContent = '📹 Record Meeting';
       }
     }
 
@@ -1521,10 +1608,12 @@
         data.mappings.forEach(m => {
           participantNameMap[m.uid] = { name: m.name, role: m.role, handRaised: m.handRaised };
           
-          // Update display card labels
-          const nameSpan = document.querySelector(`#video-card-${m.uid} .video-card-name span`);
-          if (nameSpan) {
-            nameSpan.textContent = `${m.name} ${m.uid === myUid ? '(You)' : ''}`;
+          // Lock: Update display card labels only if publisher (teacher)
+          if (role === 'publisher') {
+            const nameSpan = document.querySelector(`#video-card-${m.uid} .video-card-name span`);
+            if (nameSpan) {
+              nameSpan.textContent = `${m.name} ${m.uid === myUid ? '(You)' : ''}`;
+            }
           }
 
           // Update hand raised overlay
@@ -1540,18 +1629,23 @@
           const roleLabel = isTeacher ? 'Teacher' : 'Student';
           const avatarLetter = m.name.charAt(0).toUpperCase();
 
-          rosterContainer.innerHTML += `
-            <div class="roster-item">
-              <div class="roster-left">
-                <div class="avatar" style="${isTeacher ? 'background:var(--cyan)' : ''}">${avatarLetter}</div>
-                <span class="roster-name">${m.name} ${m.uid === myUid ? '(You)' : ''} ${m.handRaised ? '✋' : ''}</span>
+          // Render roster items (Roster only shown/accessible to Teacher)
+          if (role === 'publisher') {
+            rosterContainer.innerHTML += `
+              <div class="roster-item">
+                <div class="roster-left">
+                  <div class="avatar" style="${isTeacher ? 'background:var(--cyan)' : ''}">${avatarLetter}</div>
+                  <span class="roster-name">${m.name} ${m.uid === myUid ? '(You)' : ''} ${m.handRaised ? '✋' : ''}</span>
+                </div>
+                <span class="roster-role ${roleClass}">${roleLabel}</span>
               </div>
-              <span class="roster-role ${roleClass}">${roleLabel}</span>
-            </div>
-          `;
+            `;
+          }
         });
 
-        document.getElementById('tabRoster').textContent = `Students (${activeStudents})`;
+        if (role === 'publisher') {
+          document.getElementById('tabRoster').textContent = `Students (${activeStudents})`;
+        }
 
       } catch (err) {
         console.warn('Roster poll error:', err.message);
