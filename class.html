@@ -787,6 +787,31 @@
       border: 1px solid rgba(6, 182, 212, 0.2);
     }
 
+    .roster-perm-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .roster-perm-btn.allowed {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--success);
+      color: var(--success);
+    }
+    .roster-perm-btn.blocked {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
     /* COLLABORATIVE WHITEBOARD MODAL */
     .whiteboard-modal {
       position: fixed;
@@ -1140,7 +1165,12 @@
       </div>
 
       <!-- ROSTER CONTAINER -->
-      <div class="roster-container" id="panelRosterContent"></div>
+      <div class="roster-container" id="panelRosterContent" style="display: none; flex-direction: column; gap: 12px;">
+        <div style="margin-bottom: 8px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px;">HOST PERMISSIONS</span>
+        </div>
+        <div id="rosterList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
     </div>
 
   </div>
@@ -1709,10 +1739,18 @@
         await fetch(`${BACKEND_URL}/api/classroom/register-name`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ channelName, uid: myUid, name: displayName, role, handRaised: false })
+          body: JSON.stringify({ 
+            channelName, 
+            uid: myUid, 
+            name: displayName, 
+            role, 
+            handRaised: false,
+            micAllowed: (role === 'publisher'),
+            videoAllowed: (role === 'publisher')
+          })
         });
         
-        participantNameMap[myUid] = { name: displayName, role, handRaised: false };
+        participantNameMap[myUid] = { name: displayName, role, handRaised: false, micAllowed: (role === 'publisher'), videoAllowed: (role === 'publisher') };
 
         pollRosterNames();
         setInterval(pollRosterNames, 5000);
@@ -2218,14 +2256,52 @@
         
         if (!data.mappings) return;
         
-        const rosterContainer = document.getElementById('panelRosterContent');
-        rosterContainer.innerHTML = '';
+        const rosterList = document.getElementById('rosterList');
+        if (rosterList) rosterList.innerHTML = '';
         
         let activeStudents = 0;
 
         data.mappings.forEach(m => {
-          participantNameMap[m.uid] = { name: m.name, role: m.role, handRaised: m.handRaised };
+          participantNameMap[m.uid] = { name: m.name, role: m.role, handRaised: m.handRaised, micAllowed: m.micAllowed, videoAllowed: m.videoAllowed };
           
+          // Student local permissions enforcement
+          if (m.uid === myUid && role !== 'publisher') {
+            const micBtn = document.getElementById('micBtn');
+            const camBtn = document.getElementById('camBtn');
+            
+            // 1. Mic Lock check
+            if (m.micAllowed === false) {
+              if (!isMuted) {
+                toggleMic(); // Force mute student
+              }
+              micBtn.disabled = true;
+              micBtn.style.opacity = '0.5';
+              micBtn.title = "Muted by Teacher";
+              micBtn.textContent = "🔒";
+            } else {
+              micBtn.disabled = false;
+              micBtn.style.opacity = '1';
+              micBtn.title = "Mute/Unmute Mic";
+              micBtn.textContent = isMuted ? "🔇" : "🎙️";
+            }
+            
+            // 2. Camera Lock check
+            if (m.videoAllowed === false) {
+              if (!isCamOff) {
+                toggleCam(); // Force camera off
+              }
+              camBtn.disabled = true;
+              camBtn.style.opacity = '0.5';
+              camBtn.title = "Video Blocked by Teacher";
+              camBtn.textContent = "🔒";
+            } else {
+              camBtn.disabled = false;
+              camBtn.style.opacity = '1';
+              camBtn.title = "Toggle Camera";
+              camBtn.textContent = isCamOff ? "🚫" : "📷";
+            }
+          }
+
           // Lock: Update display card labels only if publisher (teacher)
           if (role === 'publisher') {
             const nameSpan = document.querySelector(`#video-card-${m.uid} .video-card-name span`);
@@ -2258,14 +2334,29 @@
           const avatarLetter = m.name.charAt(0).toUpperCase();
 
           // Render roster items (Roster only shown/accessible to Teacher)
-          if (role === 'publisher') {
-            rosterContainer.innerHTML += `
+          if (role === 'publisher' && rosterList) {
+            const micIcon = m.micAllowed ? '🎙️' : '🔇';
+            const micClass = m.micAllowed ? 'allowed' : 'blocked';
+            const videoIcon = m.videoAllowed ? '📷' : '🚫';
+            const videoClass = m.videoAllowed ? 'allowed' : 'blocked';
+            
+            const controlsHtml = isTeacher ? '' : `
+              <div style="display: flex; gap: 6px;">
+                <button onclick="toggleStudentPermission(${m.uid}, 'mic', ${!m.micAllowed})" class="roster-perm-btn ${micClass}">${micIcon}</button>
+                <button onclick="toggleStudentPermission(${m.uid}, 'video', ${!m.videoAllowed})" class="roster-perm-btn ${videoClass}">${videoIcon}</button>
+              </div>
+            `;
+
+            rosterList.innerHTML += `
               <div class="roster-item">
                 <div class="roster-left">
                   <div class="avatar" style="${isTeacher ? 'background:var(--cyan)' : ''}">${avatarLetter}</div>
                   <span class="roster-name">${m.name} ${m.uid === myUid ? '(You)' : ''} ${m.handRaised ? '✋' : ''}</span>
                 </div>
-                <span class="roster-role ${roleClass}">${roleLabel}</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="roster-role ${roleClass}">${roleLabel}</span>
+                  ${controlsHtml}
+                </div>
               </div>
             `;
           }
@@ -2277,6 +2368,23 @@
 
       } catch (err) {
         console.warn('Roster poll error:', err.message);
+      }
+    }
+
+    async function toggleStudentPermission(uid, type, allowed) {
+      if (role !== 'publisher') return;
+      
+      try {
+        await fetch(`${BACKEND_URL}/api/classroom/toggle-permission`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channelName, uid, type, allowed })
+        });
+        
+        // Instant refresh roster
+        pollRosterNames();
+      } catch (err) {
+        console.error('Failed to toggle permission:', err);
       }
     }
 
