@@ -1755,6 +1755,9 @@
         pollRosterNames();
         setInterval(pollRosterNames, 5000);
 
+        sendHeartbeat();
+        setInterval(sendHeartbeat, 10000);
+
         await client.join(appId, channelName, token, myUid);
         console.log('Joined Agora RTC Room successfully! UID:', myUid);
 
@@ -2385,6 +2388,18 @@
         pollRosterNames();
       } catch (err) {
         console.error('Failed to toggle permission:', err);
+      }
+    }
+
+    async function sendHeartbeat() {
+      try {
+        await fetch(`${BACKEND_URL}/api/classroom/heartbeat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channelName, uid: myUid })
+        });
+      } catch (err) {
+        console.warn('Heartbeat error:', err);
       }
     }
 
