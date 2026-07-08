@@ -1545,7 +1545,7 @@ footer{background:#1a1530;color:#e3def5;padding:56px 5% 28px;}
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-const BACKEND_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (window.location.port === '5000' || window.location.port === '5501')
+const BACKEND_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:5000'
   : 'https://mpulse-digi-ai-backend.onrender.com';
 
@@ -2075,6 +2075,55 @@ function handleChatEnter(e) {
 function sendQuickReply(msg) {
   sendChatMessage(msg);
 }
+function formatChatbotMarkdown(text) {
+  // Escape HTML tags to prevent XSS
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // Bold (**bold**)
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Italics (*italics*)
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  // Inline code (`code`)
+  html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+
+  // Split by line to handle bullet lists
+  const lines = html.split('\n');
+  let inList = false;
+  const processedLines = lines.map(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+      const content = trimmed.substring(2);
+      let prefix = '';
+      if (!inList) {
+        prefix = '<ul style="margin-left: 20px; margin-bottom: 8px; list-style-type: disc;">';
+        inList = true;
+      }
+      return `${prefix}<li style="margin-bottom: 4px;">${content}</li>`;
+    } else {
+      let suffix = '';
+      if (inList) {
+        suffix = '</ul>';
+        inList = false;
+      }
+      return `${suffix}${line}`;
+    }
+  });
+
+  if (inList) {
+    processedLines.push('</ul>');
+  }
+
+  return processedLines.join('\n')
+    .replace(/\n/g, '<br>')
+    .replace(/(<\/ul>)<br>/g, '$1')
+    .replace(/<br>(<ul)/g, '$1');
+}
+
 async function sendChatMessage(customMsg) {
   const input = document.getElementById('chatInput');
   const message = (customMsg || input.value).trim();
@@ -2115,14 +2164,7 @@ async function sendChatMessage(customMsg) {
     const botBubble = document.createElement('div');
     botBubble.className = 'chat-bubble bot-message';
     
-    let formattedText = data.reply
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\n/g, '<br>');
-    botBubble.innerHTML = formattedText;
+    botBubble.innerHTML = formatChatbotMarkdown(data.reply);
     
     messagesDiv.appendChild(botBubble);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
