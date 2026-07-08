@@ -1459,10 +1459,22 @@
         return;
       }
 
+      // 1. Microphone Initialization
       try {
         lobbyTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        lobbyMicActive = true;
+      } catch (err) {
+        console.warn('Lobby microphone preview error:', err);
+        lobbyMicActive = false;
+        document.getElementById('lobbyMicBtn').classList.add('disabled');
+        document.getElementById('lobbyMicBtn').textContent = '🚫';
+        document.getElementById('lobbyMicBtn').title = `Microphone unavailable: ${err.message}`;
+      }
+
+      // 2. Camera Initialization
+      try {
         lobbyTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: '720p_1' });
-        
+        lobbyCamActive = true;
         document.getElementById('lobbyPreviewAvatar').style.display = 'none';
         lobbyTracks.videoTrack.play('lobbyPreviewPlayer');
       } catch (err) {
@@ -1471,6 +1483,7 @@
         lobbyCamActive = false;
         document.getElementById('lobbyCamBtn').classList.add('disabled');
         document.getElementById('lobbyCamBtn').textContent = '🚫';
+        document.getElementById('lobbyCamBtn').title = `Camera unavailable: ${err.message}`;
       }
     }
 
@@ -2007,29 +2020,87 @@
         //   a) They are in Interactive Mode AND
         //   b) The host promotes them to 'host' role via allowStudentToSpeak()
         if (isHost) {
-          localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-          localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: '720p_1' });
+          let audioTrackError = null;
+          let videoTrackError = null;
 
+          // 1. Microphone Initialization
+          try {
+            localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+          } catch (err) {
+            console.error('[Agora] Failed to create microphone track:', err);
+            audioTrackError = err;
+          }
+
+          // 2. Camera Initialization
+          try {
+            localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: '720p_1' });
+          } catch (err) {
+            console.error('[Agora] Failed to create camera track:', err);
+            videoTrackError = err;
+          }
+
+          // 3. Create Video Card
           createVideoCard(myUid, displayName, true);
-          localTracks.videoTrack.play(`video-player-${myUid}`);
 
-          if (!lobbyMicActive) {
-            await localTracks.audioTrack.setEnabled(false);
+          // 4. Configure microphone states
+          const micBtn = document.getElementById('micBtn');
+          if (localTracks.audioTrack) {
+            if (!lobbyMicActive) {
+              await localTracks.audioTrack.setEnabled(false);
+              isMuted = true;
+              micBtn.classList.add('disabled');
+              micBtn.textContent = '🔇';
+              document.getElementById(`muted-${myUid}`).style.display = 'flex';
+            }
+          } else {
             isMuted = true;
-            document.getElementById('micBtn').classList.add('disabled');
-            document.getElementById('micBtn').textContent = '🔇';
+            micBtn.classList.add('disabled');
+            micBtn.textContent = '🔒';
+            micBtn.disabled = true;
+            micBtn.title = `Microphone unavailable: ${audioTrackError ? audioTrackError.message : 'Unknown error'}`;
             document.getElementById(`muted-${myUid}`).style.display = 'flex';
           }
-          if (!lobbyCamActive) {
-            await localTracks.videoTrack.setEnabled(false);
+
+          // 5. Configure camera states
+          const camBtn = document.getElementById('camBtn');
+          if (localTracks.videoTrack) {
+            localTracks.videoTrack.play(`video-player-${myUid}`);
+            if (!lobbyCamActive) {
+              await localTracks.videoTrack.setEnabled(false);
+              isCamOff = true;
+              camBtn.classList.add('disabled');
+              camBtn.textContent = '🚫';
+              document.getElementById(`avatar-${myUid}`).style.display = 'flex';
+            }
+          } else {
             isCamOff = true;
-            document.getElementById('camBtn').classList.add('disabled');
-            document.getElementById('camBtn').textContent = '🚫';
+            camBtn.classList.add('disabled');
+            camBtn.textContent = '🔒';
+            camBtn.disabled = true;
+            camBtn.title = `Camera unavailable: ${videoTrackError ? videoTrackError.message : 'Unknown error'}`;
             document.getElementById(`avatar-${myUid}`).style.display = 'flex';
           }
 
-          await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
-          console.log('[Agora] Host tracks published successfully!');
+          // 6. Publish available tracks
+          const tracksToPublish = [];
+          if (localTracks.audioTrack) tracksToPublish.push(localTracks.audioTrack);
+          if (localTracks.videoTrack) tracksToPublish.push(localTracks.videoTrack);
+
+          if (tracksToPublish.length > 0) {
+            await client.publish(tracksToPublish);
+            console.log(`[Agora] Host tracks published successfully! (${tracksToPublish.length} tracks)`);
+          } else {
+            console.warn('[Agora] No host tracks available to publish.');
+          }
+
+          // 7. Warn user if microphone or camera failed to open
+          if (audioTrackError || videoTrackError) {
+            let warnMsg = 'Agora connected, but some devices could not be started:\n';
+            if (audioTrackError) warnMsg += `• Microphone: ${audioTrackError.name} (${audioTrackError.message})\n`;
+            if (videoTrackError) warnMsg += `• Camera: ${videoTrackError.name} (${videoTrackError.message})\n`;
+            warnMsg += '\nYou can still participate in the classroom, but you may need to check your permissions or verify if another app is using your camera/microphone.';
+            alert(warnMsg);
+          }
         } else {
           // Student joins as silent audience — show avatar tile with their name
           createVideoCard(myUid, displayName, true);
@@ -2059,7 +2130,7 @@
       card.id = `video-card-${uid}`;
 
       const initial = name ? name.charAt(0).toUpperCase() : '?';
-      const showNamesOverlay = (role === 'publisher');
+      const showNamesOverlay = true; // Always show names overlay so all users can see participant names
 
       card.innerHTML = `
         <div class="video-card-player" id="video-player-${uid}"></div>
@@ -2274,10 +2345,22 @@
         }
         
         if (!isCamOff) {
-          localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: '720p_1' });
-          document.getElementById(`avatar-${myUid}`).style.display = 'none';
-          localTracks.videoTrack.play(`video-player-${myUid}`);
-          await client.publish(localTracks.videoTrack);
+          try {
+            localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: '720p_1' });
+            document.getElementById(`avatar-${myUid}`).style.display = 'none';
+            localTracks.videoTrack.play(`video-player-${myUid}`);
+            await client.publish(localTracks.videoTrack);
+          } catch (camErr) {
+            console.error('[Agora] Failed to restore camera track after screen share:', camErr);
+            isCamOff = true;
+            document.getElementById(`avatar-${myUid}`).style.display = 'flex';
+            const camBtn = document.getElementById('camBtn');
+            if (camBtn) {
+              camBtn.classList.add('disabled');
+              camBtn.textContent = '🚫';
+              camBtn.title = `Camera unavailable: ${camErr.message}`;
+            }
+          }
         } else {
           document.getElementById(`avatar-${myUid}`).style.display = 'flex';
         }
@@ -2644,12 +2727,10 @@
             }
           }
 
-          // Lock: Update display card labels only if publisher (teacher)
-          if (role === 'publisher') {
-            const nameSpan = document.querySelector(`#video-card-${m.uid} .video-card-name span`);
-            if (nameSpan) {
-              nameSpan.textContent = `${m.name} ${m.uid === myUid ? '(You)' : ''}`;
-            }
+          // Update display card labels for all users
+          const nameSpan = document.querySelector(`#video-card-${m.uid} .video-card-name span`);
+          if (nameSpan) {
+            nameSpan.textContent = `${m.name} ${m.uid === myUid ? '(You)' : ''}`;
           }
 
           // Move teacher card to main presenter area if it's currently in sidebar / spotlight
